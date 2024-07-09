@@ -30,8 +30,8 @@ def process(file_names):
         urllib.request.urlretrieve(remote_file_name, local_file_name)
         print('Local : {}'.format(local_file_name))
         return True
-    except urllib.error.HTTPError as e:
-        print('HTTPError: {}'.format(e))
+    except Exception as e:
+        print('Error: {}'.format(e))
         return False
 
 
@@ -44,7 +44,7 @@ def main():
     parser.add_argument('--wavelengths', nargs='+', default=[94,131,171,193,211,304,335,1600,1700], help='Wavelengths')
     parser.add_argument('--remote_root', type=str, default='http://jsoc.stanford.edu/data/aia/synoptic/', help='Remote root')
     parser.add_argument('--local_root', type=str, help='Local root', required=True)
-    parser.add_argument('--max_workers', type=int, default=8, help='Max workers')
+    parser.add_argument('--max_workers', type=int, default=4, help='Max workers')
     
     args = parser.parse_args()
 
