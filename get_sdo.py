@@ -45,6 +45,7 @@ def main():
     parser.add_argument('--remote_root', type=str, default='http://jsoc.stanford.edu/data/aia/synoptic/', help='Remote root')
     parser.add_argument('--local_root', type=str, help='Local root', required=True)
     parser.add_argument('--max_workers', type=int, default=4, help='Max workers')
+    parser.add_argument('--chunk_size', type=int, default=1, help='Chunk size')
     
     args = parser.parse_args()
 
@@ -82,7 +83,7 @@ def main():
         # process((remote_file_name, local_file_name))
 
 
-    results = process_map(process, file_names, max_workers=args.max_workers)
+    results = process_map(process, file_names, max_workers=args.max_workers, chunksize=args.chunk_size)
 
     print('Files downloaded: {}'.format(results.count(True)))
     print('Files skipped   : {}'.format(results.count(False)))
