@@ -5,6 +5,7 @@ import datetime
 import os
 import urllib.request
 from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
 
 # BioSentinel dates
 # From: 2022-11-01T00:01:00 
@@ -19,6 +20,21 @@ def date_to_filename(date, wavelength):
     # zero-pad wavelength to 4 digits
     return 'AIA{:%Y%m%d_%H%M}_{:04d}.fits'.format(date, wavelength)
 
+
+def process(file_names):
+    remote_file_name, local_file_name = file_names
+
+    print('Remote: {}'.format(remote_file_name))
+    os.makedirs(os.path.dirname(local_file_name), exist_ok=True)
+    try:
+        urllib.request.urlretrieve(remote_file_name, local_file_name)
+        print('Local : {}'.format(local_file_name))
+        return True
+    except urllib.error.HTTPError as e:
+        print('HTTPError: {}'.format(e))
+        return False
+
+
 def main():
     description = 'FDL-X 2024, Radiation team, SDO AIA data downloader and processor.'
     parser = argparse.ArgumentParser(description=description)
@@ -28,6 +44,7 @@ def main():
     parser.add_argument('--wavelengths', nargs='+', default=[94,131,171,193,211,304,335,1600,1700], help='Wavelengths')
     parser.add_argument('--remote_root', type=str, default='http://jsoc.stanford.edu/data/aia/synoptic/', help='Remote root')
     parser.add_argument('--local_root', type=str, help='Local root', required=True)
+    parser.add_argument('--max_workers', type=int, default=8, help='Max workers')
     
     args = parser.parse_args()
 
@@ -60,26 +77,16 @@ def main():
 
     print('Total files: {}'.format(len(file_names)))
 
-    # Download files
-    files_downloaded = 0
-    files_skipped = 0
+
+    # for remote_file_name, local_file_name in tqdm(file_names):
+        # process((remote_file_name, local_file_name))
 
 
-    for remote_file_name, local_file_name in tqdm(file_names):
-        print('Remote: {}'.format(remote_file_name))
-        os.makedirs(os.path.dirname(local_file_name), exist_ok=True)
-        try:
-            urllib.request.urlretrieve(remote_file_name, local_file_name)
-            print('Local : {}'.format(local_file_name))
-            files_downloaded += 1
-        except urllib.error.HTTPError as e:
-            print('HTTPError: {}'.format(e))
-            files_skipped += 1
-            continue
+    results = process_map(process, file_names, max_workers=args.max_workers)
 
-    print('Files downloaded: {}'.format(files_downloaded))
-    print('Files skipped   : {}'.format(files_skipped))
-    print('Files total     : {}'.format(files_downloaded + files_skipped))
+    print('Files downloaded: {}'.format(results.count(True)))
+    print('Files skipped   : {}'.format(results.count(False)))
+    print('Files total     : {}'.format(len(results)))
     print('End time: {}'.format(datetime.datetime.now()))
     print('Elapsed time: {}'.format(datetime.datetime.now() - start_time))
 
