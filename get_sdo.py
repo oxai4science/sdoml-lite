@@ -45,7 +45,9 @@ def main():
     parser.add_argument('--remote_root', type=str, default='http://jsoc.stanford.edu/data/aia/synoptic/', help='Remote root')
     parser.add_argument('--local_root', type=str, help='Local root', required=True)
     parser.add_argument('--max_workers', type=int, default=4, help='Max workers')
-    parser.add_argument('--chunk_size', type=int, default=1, help='Chunk size')
+    parser.add_argument('--worker_chunk_size', type=int, default=1, help='Chunk size per worker')
+    parser.add_argument('--total_nodes', type=int, default=1, help='Total number of nodes')
+    parser.add_argument('--node_index', type=int, default=0, help='Node index')
     
     args = parser.parse_args()
 
@@ -76,14 +78,25 @@ def main():
 
         current += datetime.timedelta(seconds=args.cadence)
 
-    print('Total files: {}'.format(len(file_names)))
 
+    if len(file_names) == 0:
+        print('No files to download.')
+        return
+    
+    if len(file_names) < args.total_nodes:
+        print('Total number of files is less than the total number of nodes.')
+        return
 
-    # for remote_file_name, local_file_name in tqdm(file_names):
-        # process((remote_file_name, local_file_name))
-
-
-    results = process_map(process, file_names, max_workers=args.max_workers, chunksize=args.chunk_size)
+    files_per_node = len(file_names) // args.total_nodes
+    # get the subset of file names for this node, based on the total number of nodes and the node index
+    file_names_for_this_node = file_names[args.node_index * files_per_node : (args.node_index + 1) * files_per_node]
+    
+    print('Total nodes: {}'.format(args.total_nodes))
+    print('Node index : {}'.format(args.node_index))
+    print('Total files for all nodes : {}'.format(len(file_names)))
+    print('Total files for this node : {}'.format(len(file_names_for_this_node)))
+    
+    results = process_map(process, file_names_for_this_node, max_workers=args.max_workers, chunksize=args.worker_chunk_size)
 
     print('Files downloaded: {}'.format(results.count(True)))
     print('Files skipped   : {}'.format(results.count(False)))
