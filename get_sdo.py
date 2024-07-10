@@ -36,7 +36,7 @@ def process(file_names):
 
 
 def main():
-    description = 'FDL-X 2024, Radiation team, SDO AIA data downloader and processor.'
+    description = 'FDL-X 2024, Radiation team, SDO AIA data download script'
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--date_start', type=str, default='2022-11-01T00:02:00', help='Start date')
     parser.add_argument('--date_end', type=str, default='2024-05-14T19:44:00', help='End date')
@@ -102,7 +102,7 @@ def main():
     print('Files skipped   : {}'.format(results.count(False)))
     print('Files total     : {}'.format(len(results)))
     print('End time: {}'.format(datetime.datetime.now()))
-    print('Elapsed time: {}'.format(datetime.datetime.now() - start_time))
+    print('Duration: {}'.format(datetime.datetime.now() - start_time))
 
 
 
