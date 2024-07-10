@@ -39,7 +39,7 @@ def main():
     description = 'FDL-X 2024, Radiation team, SDO AIA data downloader and processor.'
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--date_start', type=str, default='2022-11-01T00:02:00', help='Start date')
-    parser.add_argument('--date_end', type=str, default='2022-11-01T01:01:00', help='End date')
+    parser.add_argument('--date_end', type=str, default='2024-05-14T19:44:00', help='End date')
     parser.add_argument('--cadence', type=int, default=12*60, help='Cadence (seconds)')
     parser.add_argument('--wavelengths', nargs='+', default=[94,131,171,193,211,304,335,1600,1700], help='Wavelengths')
     parser.add_argument('--remote_root', type=str, default='http://jsoc.stanford.edu/data/aia/synoptic/', help='Remote root')
