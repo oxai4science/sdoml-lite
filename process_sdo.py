@@ -57,7 +57,7 @@ def process(args):
     Xr = np.divide(Xr,(Xd+1e-8))
 
     #correct for exposure time and AIA degradation correction
-    Xr = Xr / (expTime*correction)
+    Xr = Xr / (expTime*abs(correction))
 
     #figure out the integer factor to downsample by mean
     divideFactor = int(X.shape[0] / resolution)
