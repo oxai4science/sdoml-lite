@@ -56,7 +56,7 @@ def process(args):
     Xr = Xr / (expTime*correction)
 
     #figure out the integer factor to downsample by mean
-    divideFactor = np.int(X.shape[0] / resolution)
+    divideFactor = int(X.shape[0] / resolution)
 
     Xr = skimage.transform.downscale_local_mean(Xr,(divideFactor,divideFactor))
     #make it a sum rather than a mean by multiplying by the number of pixels that were used
