@@ -2,8 +2,9 @@ import argparse
 import pprint
 import sys
 import datetime
+import time
 import os
-import requests
+import urllib.request
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 
@@ -21,20 +22,21 @@ def date_to_filename(date, wavelength):
 def process(file_names):
     remote_file_name, local_file_name = file_names
 
-    print('Remote: {}'.format(remote_file_name))
+    print('Remote: {}'.format(remote_file_name), flush=True)
     os.makedirs(os.path.dirname(local_file_name), exist_ok=True)
-    timeout = 15 # seconds
+    timeout = 5 # seconds
     retries = 5
     for i in range(retries):
+        if i > 0:
+            print('Retrying ({}/{}): {}'.format(i+1, retries, remote_file_name))
+            time.sleep(0.5)
         try:
-            r = requests.get(remote_file_name, timeout=(timeout, timeout*20))
-            open(local_file_name, 'wb').write(r.content)
+            r = urllib.request.urlopen(remote_file_name, timeout=timeout)
+            open(local_file_name, 'wb').write(r.read())
             print('Local : {}'.format(local_file_name))
             return True
         except Exception as e:
             print('Error: {}'.format(e))
-        if i < retries:
-            print('Retrying ({}/{}): {}'.format(i+1, retries, remote_file_name))
     if os.path.exists(local_file_name):
         os.remove(local_file_name)
     return False
@@ -133,7 +135,10 @@ def main():
     print('Total files for all nodes : {}'.format(len(file_names)))
     print('Total files for this node : {}'.format(len(file_names_for_this_node)))
     
-    results = process_map(process, file_names_for_this_node, max_workers=args.max_workers, chunksize=args.worker_chunk_size)
+    if args.max_workers == 1:
+        results = list(map(process, file_names_for_this_node))
+    else:
+        results = process_map(process, file_names_for_this_node, max_workers=args.max_workers, chunksize=args.worker_chunk_size)
 
     print('Files downloaded: {}'.format(results.count(True)))
     print('Files skipped   : {}'.format(results.count(False)))
