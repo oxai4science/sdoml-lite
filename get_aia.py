@@ -3,7 +3,7 @@ import pprint
 import sys
 import datetime
 import os
-import urllib.request
+import requests
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 
@@ -23,13 +23,21 @@ def process(file_names):
 
     print('Remote: {}'.format(remote_file_name))
     os.makedirs(os.path.dirname(local_file_name), exist_ok=True)
-    try:
-        urllib.request.urlretrieve(remote_file_name, local_file_name)
-        print('Local : {}'.format(local_file_name))
-        return True
-    except Exception as e:
-        print('Error: {}'.format(e))
-        return False
+    timeout = 15 # seconds
+    retries = 5
+    for i in range(retries):
+        try:
+            r = requests.get(remote_file_name, timeout=(timeout, timeout*20))
+            open(local_file_name, 'wb').write(r.content)
+            print('Local : {}'.format(local_file_name))
+            return True
+        except Exception as e:
+            print('Error: {}'.format(e))
+        if i < retries:
+            print('Retrying ({}/{}): {}'.format(i+1, retries, remote_file_name))
+    if os.path.exists(local_file_name):
+        os.remove(local_file_name)
+    return False
 
 
 def main():
