@@ -8,7 +8,21 @@ from tqdm.contrib.concurrent import process_map
 from sunpy.map import Map
 import skimage.transform
 import numpy as np
+import matplotlib.pyplot as plt
 from glob import glob
+
+
+# Mask to remove text printed lower left
+# Example: http://jsoc.stanford.edu/data/hmi/images/2024/01/01/20240101_000000_M_1k.jpg
+mask = np.ones((1024,1024))
+mask[990:,:300] = 0.
+
+def read_hmi_jpg(file_name):
+    x = plt.imread(file_name)
+    x = x.mean(axis=2)
+    x *= mask
+    x /= 255.
+    return x
 
 def process(args):
     source_file, target_file, resolution, degradations = args
@@ -57,7 +71,7 @@ def process(args):
     Xr = np.divide(Xr,(Xd+1e-8))
 
     #correct for exposure time and AIA degradation correction
-    Xr = Xr / (expTime*correction)
+    Xr = Xr / (expTime*abs(correction))
 
     #figure out the integer factor to downsample by mean
     divideFactor = int(X.shape[0] / resolution)
@@ -75,24 +89,9 @@ def process(args):
     print('Target: {}'.format(target_file))
     return True
 
-def load_degradations(degradation_dir, wavelengths):
-    def getDegrad(fn):
-        #map YYYY-MM-DD -> degradation parameter
-        lines = open(fn).read().strip().split("\n")
-        degrad = {}
-        for l in lines:
-            d, f = l.split(",")
-            degrad[d[1:11]] = float(f)
-        return degrad     
-    #return wavelength -> (date -> degradation dictionary)
-    degrads = {} 
-    for wl in wavelengths:
-        degrads[wl] = getDegrad(os.path.join(degradation_dir, 'degrad_{}.csv'.format(wl)))
-    return degrads 
-
 
 def main():
-    description = 'FDL-X 2024, Radiation team, SDO AIA data processor'
+    description = 'FDL-X 2024, Radiation team, SDO HMI data processor'
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--source_dir', type=str, help='Source directory', required=True)
     parser.add_argument('--target_dir', type=str, help='Destination directory', required=True)
