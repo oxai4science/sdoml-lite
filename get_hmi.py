@@ -12,9 +12,6 @@ from tqdm.contrib.concurrent import process_map
 # From: 2022-11-01T00:01:00 
 # To:   2024-05-14T19:44:00
 
-# SDO AIA dates
-# From: 2022-11-01T00:02:00 
-# To:   2024-05-14T19:44:00
 
 def date_to_filename(date):
     return '{:%Y%m%d_%H%M}00_M_1k.jpg'.format(date)
@@ -37,7 +34,7 @@ def process(file_names):
 def main():
     description = 'FDL-X 2024, Radiation Team, SDO HMI data downloader'
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('--date_start', type=str, default='2022-11-01T00:02:00', help='Start date')
+    parser.add_argument('--date_start', type=str, default='2022-11-01T00:01:00', help='Start date')
     parser.add_argument('--date_end', type=str, default='2024-05-14T19:44:00', help='End date')
     parser.add_argument('--cadence', type=int, default=15, help='Cadence (minutes)')
     parser.add_argument('--remote_root', type=str, default='http://jsoc.stanford.edu/data/hmi/images/', help='Remote root')
@@ -60,54 +57,29 @@ def main():
     date_start = datetime.datetime.fromisoformat(args.date_start)
     date_end = datetime.datetime.fromisoformat(args.date_end)
     
-    if (args.cadence % 2 != 0) and (args.cadence != 15):
-        print('Cadence must be an even number (except when it is 15).')
+    if (args.cadence % 15 != 0):
+        print('Cadence must be a multiple of 15.')
         return
-    elif args.cadence == 15:
-        print('Special case: Cadence is 15 minutes.')
-        print('Will use a sequence of minutes :00, :14, :30, :44.')
-        # Adjust starting date to the nearest minute that is 0, 14, 30 or 44
-        if date_start.minute < 15:
-            date_start = date_start.replace(minute=0)
-        elif date_start.minute < 30:
-            date_start = date_start.replace(minute=14)
-        elif date_start.minute < 45:
-            date_start = date_start.replace(minute=30)
-        else:
-            date_start = date_start.replace(minute=44)
+
+    if date_start.minute % 15 != 0:
+        date_start -= datetime.timedelta(minutes=date_start.minute % 15)
         print('Adjusted start date: {}'.format(date_start))
-    else:
-        # Adjust starting date to the nearest minute that is even
-        if date_start.minute % 2 != 0:
-            date_start = date_start.replace(minute=date_start.minute + 1)
-            print('Adjusted start date: {}'.format(date_start))
 
     current = date_start
 
     file_names = []
     while current < date_end:
-        # Sample pattern, the last suffix is the wavelength
-        # http://jsoc2.stanford.edu/data/aia/synoptic/2024/01/02/H0100/AIA20240102_0100_0094.fits
+        # Sample URL:
+        # http://jsoc.stanford.edu/data/hmi/images/2024/01/01/20240101_000000_M_1k.jpg
 
-        for wavelength in args.wavelengths:
-            file_name = date_to_filename(current, wavelength)
-            remote_file_name = os.path.join(args.remote_root, '{:%Y/%m/%d/H%H00}/'.format(current), file_name)
-            # print('Remote: {}'.format(remote_file_name))
-            local_file_name = os.path.join(args.local_root, '{:%Y/%m/%d}/'.format(current), file_name)
-            # print('Local : {}'.format(local_file_name))
-            file_names.append((remote_file_name, local_file_name))
+        file_name = date_to_filename(current)
+        remote_file_name = os.path.join(args.remote_root, '{:%Y/%m/%d}'.format(current), file_name)
+        # print('Remote: {}'.format(remote_file_name))
+        local_file_name = os.path.join(args.local_root, '{:%Y/%m/%d}'.format(current), file_name)
+        # print('Local : {}'.format(local_file_name))
+        file_names.append((remote_file_name, local_file_name))
 
-        if args.cadence == 15:
-            if current.minute == 0:
-                current += datetime.timedelta(minutes=14)
-            elif current.minute == 14:
-                current += datetime.timedelta(minutes=16)
-            elif current.minute == 30:
-                current += datetime.timedelta(minutes=14)
-            elif current.minute == 44:
-                current += datetime.timedelta(minutes=16)
-        else:
-           current += datetime.timedelta(minutes=args.cadence)
+        current += datetime.timedelta(minutes=args.cadence)
 
 
     if len(file_names) == 0:

@@ -5,7 +5,7 @@ import datetime
 import os
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
-from sunpy.map import Map
+from sunpy.coordinates import sun
 import skimage.transform
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,39 +25,27 @@ def read_hmi_jpg(file_name):
     return x
 
 def process(args):
-    source_file, target_file, resolution, degradations = args
+    source_file, target_file, resolution = args
 
     try:
-        Xd = Map(source_file)
+        X = read_hmi_jpg(source_file)
         print('Source: {}'.format(source_file))
     except Exception as e:
         print('Error: {}'.format(e))
         return False
     
-    X = Xd.data
-    
-    #make a valid mask; we'll use this to correct for downpush when interpolating AIA
-    validMask = 1.0 * (X > 0) 
-    X[np.where(X<=0.0)] = 0.0
-
     fn = os.path.basename(source_file)
-    fn2 = fn.split("_")[0].replace("AIA","")
-    datestring = "%s-%s-%s" % (fn2[:4],fn2[4:6],fn2[6:8])
-    wavelength = int(fn.split("_")[-1].replace(".fits",""))
+    # get datetime object from fn. Example fn: 20240101_000000_M_1k.jpg
+    date = datetime.datetime.strptime(fn[:13], '%Y%m%d_%H%M')
 
-    expTime = max(Xd.meta['EXPTIME'],1e-2)
-    quality = Xd.meta['QUALITY']
-    correction = degradations[wavelength][datestring]
-
-    if quality != 0:
-        print('Quality flag is not zero: {}'.format(quality))
-        return False
-    
     # Target angular size
     trgtAS = 976.0
 
     # Scale factor
-    rad = Xd.meta['RSUN_OBS']
+    # rad = Xd.meta['RSUN_OBS']
+    # Since we don't have the meta data, we'll use the sunpy library to get the angular radius of the sun (based on Earth's position instead of SDO's, but it should be close enough)
+    rad = sun.angular_radius(date).to('arcsec').value
+
     scale_factor = trgtAS/rad
 
     #fix the translation
@@ -65,26 +53,16 @@ def process(args):
     #rescale and keep center
     XForm = skimage.transform.SimilarityTransform(scale=scale_factor,translation=(t,t))
     Xr = skimage.transform.warp(X,XForm.inverse,preserve_range=True,mode='edge',output_shape=(X.shape[0],X.shape[0]))
-    Xd = skimage.transform.warp(validMask,XForm.inverse,preserve_range=True,mode='edge',output_shape=(X.shape[0],X.shape[0]))
-
-    #correct for interpolating over valid pixels
-    Xr = np.divide(Xr,(Xd+1e-8))
-
-    #correct for exposure time and AIA degradation correction
-    Xr = Xr / (expTime*abs(correction))
 
     #figure out the integer factor to downsample by mean
     divideFactor = int(X.shape[0] / resolution)
-
     Xr = skimage.transform.downscale_local_mean(Xr,(divideFactor,divideFactor))
-    #make it a sum rather than a mean by multiplying by the number of pixels that were used
-    Xr = Xr*divideFactor*divideFactor
 
     #cast to fp32
     Xr = Xr.astype('float32')
 
     os.makedirs(os.path.dirname(target_file), exist_ok=True)    
-    np.savez_compressed(target_file, x=Xr)
+    np.save(target_file, Xr)
 
     print('Target: {}'.format(target_file))
     return True
@@ -111,24 +89,24 @@ def main():
     print('Config:')
     pprint.pprint(vars(args), depth=2, width=50)
 
-    print('Loading degradations')
-    degradations = load_degradations(args.degradation_dir, args.wavelengths)
-
-    # walk through the source directory with glob, find all .fits files, and create a corresponding file name ending in .npz in the target dir, keeping the directory structure
+    # walk through the source directory with glob, find all .jpg files, and create a corresponding file name ending in .npy in the target dir, keeping the directory structure
 
     # set the source and target directories, strip final slash if present
     source_dir = args.source_dir.rstrip('/')
     target_dir = args.target_dir.rstrip('/')
 
     # get all .fits files in the source directory
-    fits_files = glob(os.path.join(source_dir, '**', '*.fits'), recursive=True)
+    fits_files = glob(os.path.join(source_dir, '**', '*.jpg'), recursive=True)
 
     # create a list of tuples with the source and target file names
     # be careful to strip or add slashes as needed
     file_names = []
     for source_file in fits_files:
-        target_file = source_file.replace(source_dir, target_dir).replace('.fits', '.npz')
-        file_names.append((source_file, target_file, args.resolution, degradations))
+        target_file = source_file.replace(source_dir, target_dir).replace('.jpg', '.npy')
+        target_file = target_file.replace('00_M_1k', '_M')
+        target_file = target_file.replace(os.path.basename(target_file), 'HMI' + os.path.basename(target_file))
+        
+        file_names.append((source_file, target_file, args.resolution))
 
     # process the files
     results = process_map(process, file_names, max_workers=args.max_workers, chunksize=args.worker_chunk_size)

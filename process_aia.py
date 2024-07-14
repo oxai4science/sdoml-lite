@@ -51,10 +51,12 @@ def process(args):
     #rescale and keep center
     XForm = skimage.transform.SimilarityTransform(scale=scale_factor,translation=(t,t))
     Xr = skimage.transform.warp(X,XForm.inverse,preserve_range=True,mode='edge',output_shape=(X.shape[0],X.shape[0]))
-    Xd = skimage.transform.warp(validMask,XForm.inverse,preserve_range=True,mode='edge',output_shape=(X.shape[0],X.shape[0]))
+    Xm = skimage.transform.warp(validMask,XForm.inverse,preserve_range=True,mode='edge',output_shape=(X.shape[0],X.shape[0]))
 
     #correct for interpolating over valid pixels
-    Xr = np.divide(Xr,(Xd+1e-8))
+    # Xr = np.divide(Xr,(Xm+1e-8))
+    # The mask application above in the original SDOML code might be bad. It ends up multiplying invalid pixels (value zero in mask) by the large factor 1e+8, instead of nullifying them. Simply multiply by the mask instead.
+    Xr = Xr * Xm
 
     #correct for exposure time and AIA degradation correction
     Xr = Xr / (expTime*correction)
@@ -70,7 +72,7 @@ def process(args):
     Xr = Xr.astype('float32')
 
     os.makedirs(os.path.dirname(target_file), exist_ok=True)    
-    np.savez_compressed(target_file, x=Xr)
+    np.save(target_file, Xr)
 
     print('Target: {}'.format(target_file))
     return True
@@ -115,7 +117,7 @@ def main():
     print('Loading degradations')
     degradations = load_degradations(args.degradation_dir, args.wavelengths)
 
-    # walk through the source directory with glob, find all .fits files, and create a corresponding file name ending in .npz in the target dir, keeping the directory structure
+    # walk through the source directory with glob, find all .fits files, and create a corresponding file name ending in .npy in the target dir, keeping the directory structure
 
     # set the source and target directories, strip final slash if present
     source_dir = args.source_dir.rstrip('/')
@@ -128,7 +130,7 @@ def main():
     # be careful to strip or add slashes as needed
     file_names = []
     for source_file in fits_files:
-        target_file = source_file.replace(source_dir, target_dir).replace('.fits', '.npz')
+        target_file = source_file.replace(source_dir, target_dir).replace('.fits', '.npy')
         file_names.append((source_file, target_file, args.resolution, degradations))
 
     # process the files
