@@ -50,7 +50,7 @@ def main():
     parser.add_argument('--cadence', type=int, default=15, help='Cadence (minutes)')
     parser.add_argument('--wavelengths', nargs='+', default=[94,131,171,193,211,304,335,1600,1700], help='Wavelengths')
     parser.add_argument('--remote_root', type=str, default='http://jsoc.stanford.edu/data/aia/synoptic/', help='Remote root')
-    parser.add_argument('--local_root', type=str, help='Local root', required=True)
+    parser.add_argument('--target_dir', type=str, help='Local root', required=True)
     parser.add_argument('--max_workers', type=int, default=1, help='Max workers')
     parser.add_argument('--worker_chunk_size', type=int, default=1, help='Chunk size per worker')
     parser.add_argument('--total_nodes', type=int, default=1, help='Total number of nodes')
@@ -101,7 +101,7 @@ def main():
             file_name = date_to_filename(current, wavelength)
             remote_file_name = os.path.join(args.remote_root, '{:%Y/%m/%d/H%H00}'.format(current), file_name)
             # print('Remote: {}'.format(remote_file_name))
-            local_file_name = os.path.join(args.local_root, '{:%Y/%m/%d}'.format(current), file_name)
+            local_file_name = os.path.join(args.target_dir, '{:%Y/%m/%d}'.format(current), file_name)
             # print('Local : {}'.format(local_file_name))
             file_names.append((remote_file_name, local_file_name))
 
