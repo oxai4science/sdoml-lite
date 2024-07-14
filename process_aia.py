@@ -31,6 +31,8 @@ def normalize(args):
         return False
 
 
+# AIA postprocessing based on SDOML code, with some modifications
+# https://github.com/SDOML/SDOML/blob/bea846347b2cd64d81fdcf1baf88a245a1bcb429/aia_fits_to_np.py
 def process(args):
     source_file, target_file, resolution, degradations = args
 
