@@ -35,8 +35,9 @@ python get_hmi.py --target_dir ./dataset_raw --date_start 2019-11-01T00:00:00 --
 
 The `get_aia.py`, `get_hmi.py`, `process_aia.py`, `process_hmi.py` scripts support parallel processing using multiple processes on the same compute node. Example usage:
 ```
-python get_aia.py --target_dir ./dataset_raw --max_workers 12 --worker_chunk_size 10
+python get_aia.py --target_dir ./dataset_raw --max_workers 8 --worker_chunk_size 10
 ```
+
 
 ### Optional: Chunking of the download across multiple compute nodes
 The `get_aia.py` and `get_hmi.py` scripts support chunking of the files to be downloaded across multiple compute nodes. This allows the download phase to be completed faster by downloading separate chunks of data on different nodes. Example usage:
