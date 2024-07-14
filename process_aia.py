@@ -96,7 +96,7 @@ def main():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--source_dir', type=str, help='Source directory', required=True)
     parser.add_argument('--target_dir', type=str, help='Destination directory', required=True)
-    parser.add_argument('--max_workers', type=int, default=4, help='Max workers')
+    parser.add_argument('--max_workers', type=int, default=1, help='Max workers')
     parser.add_argument('--worker_chunk_size', type=int, default=1, help='Chunk size per worker')
     parser.add_argument('--resolution', type=int, default=512, help='Pixel resolution of processed images. Should be a divisor of 1024.')
     parser.add_argument('--wavelengths', nargs='+', default=[94,131,171,193,211,304,335,1600,1700], help='Wavelengths')

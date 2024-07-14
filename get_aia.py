@@ -36,15 +36,15 @@ def process(file_names):
 
 
 def main():
-    description = 'FDL-X 2024, Radiation team, SDO AIA data download script'
+    description = 'FDL-X 2024, Radiation Team, SDO AIA data downloader'
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--date_start', type=str, default='2022-11-01T00:02:00', help='Start date')
     parser.add_argument('--date_end', type=str, default='2024-05-14T19:44:00', help='End date')
-    parser.add_argument('--cadence', type=int, default=12*60, help='Cadence (seconds)')
+    parser.add_argument('--cadence', type=int, default=15, help='Cadence (minutes)')
     parser.add_argument('--wavelengths', nargs='+', default=[94,131,171,193,211,304,335,1600,1700], help='Wavelengths')
     parser.add_argument('--remote_root', type=str, default='http://jsoc.stanford.edu/data/aia/synoptic/', help='Remote root')
     parser.add_argument('--local_root', type=str, help='Local root', required=True)
-    parser.add_argument('--max_workers', type=int, default=4, help='Max workers')
+    parser.add_argument('--max_workers', type=int, default=1, help='Max workers')
     parser.add_argument('--worker_chunk_size', type=int, default=1, help='Chunk size per worker')
     parser.add_argument('--total_nodes', type=int, default=1, help='Total number of nodes')
     parser.add_argument('--node_index', type=int, default=0, help='Node index')
@@ -61,8 +61,31 @@ def main():
 
     date_start = datetime.datetime.fromisoformat(args.date_start)
     date_end = datetime.datetime.fromisoformat(args.date_end)
-    current = date_start
     
+    if (args.cadence % 2 != 0) and (args.cadence != 15):
+        print('Cadence must be an even number (except when it is 15).')
+        return
+    elif args.cadence == 15:
+        print('Special case: Cadence is 15 minutes.')
+        print('Will use a sequence of minutes :00, :14, :30, :44.')
+        # Adjust starting date to the nearest minute that is 0, 14, 30 or 44
+        if date_start.minute < 15:
+            date_start = date_start.replace(minute=0)
+        elif date_start.minute < 30:
+            date_start = date_start.replace(minute=14)
+        elif date_start.minute < 45:
+            date_start = date_start.replace(minute=30)
+        else:
+            date_start = date_start.replace(minute=44)
+        print('Adjusted start date: {}'.format(date_start))
+    else:
+        # Adjust starting date to the nearest minute that is even
+        if date_start.minute % 2 != 0:
+            date_start = date_start.replace(minute=date_start.minute + 1)
+            print('Adjusted start date: {}'.format(date_start))
+
+    current = date_start
+
     file_names = []
     while current < date_end:
         # Sample pattern, the last suffix is the wavelength
@@ -76,7 +99,17 @@ def main():
             # print('Local : {}'.format(local_file_name))
             file_names.append((remote_file_name, local_file_name))
 
-        current += datetime.timedelta(seconds=args.cadence)
+        if args.cadence == 15:
+            if current.minute == 0:
+                current += datetime.timedelta(minutes=14)
+            elif current.minute == 14:
+                current += datetime.timedelta(minutes=16)
+            elif current.minute == 30:
+                current += datetime.timedelta(minutes=14)
+            elif current.minute == 44:
+                current += datetime.timedelta(minutes=16)
+        else:
+           current += datetime.timedelta(minutes=args.cadence)
 
 
     if len(file_names) == 0:
