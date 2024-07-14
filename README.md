@@ -1,12 +1,23 @@
 # SDOML-lite
 
-SDOML-lite is a lightweight version of the SDOML dataset specifically designed for machine learning applications in solar physics, containing continuous full-disk images of the Sun across several wavelengths and magnetograms. The data source is the Solar Dynamics Observatory (SDO) space telescope, a NASA mission that has been in operation since 2010.
+SDOML-lite is a lightweight version of the SDOML dataset specifically designed for machine learning applications in solar physics, providing continuous full-disk images of the Sun with magnetic field and extreme ultraviolet data in several wavelength. The data source is the Solar Dynamics Observatory (SDO) space telescope, a NASA mission that has been in operation since 2010.
+
+This repository contains:
+
+- Self-contained code that can be used to create custom SDOML-lite datasets with any given date range, downloading data from original sources and processing into the SDOML-lite format. This is based entirely in Python.
+- A PyTorch dataset implementation to work with the data.
 
 IMPORTANT: SDOML and SDOML-lite datasets are different in structure and data distributions. SDOML-lite is inspired by SDOML, but there is no compatibility between the two formats.
 
 ## Data
 
-TO DO
+The data is derived from the Helioseismic and Magnetic Imager (HMI) and the Atmospheric Imaging Assembly (AIA) instruments onboard SDO.
+
+For each date represented, we provide ten channels of images containing the following data:
+- One channel containing magnetic field data. A line-of-sight magnetogram based on the HMI data product "15-Minute Image Catalog" derived from data series hmi.M_720s.
+- Nine channels containing AIA wavelengths: 94, 131, 171, 193, 211, 304, 335, 1600, and 1700 Å. 
+
+By default the data is provided with an image resolution of 512x512 pixels and a time resolution of 15 minutes. The time resolution is limited by the underlying HMI data product that we use, which has a 15-minute cadence. The 15-minute HMI data is paired with the nearest available AIA data, which has a 12-second cadence.
 
 ## Creating your own custom SDOML-lite dataset
 
