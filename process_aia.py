@@ -10,6 +10,27 @@ import skimage.transform
 import numpy as np
 from glob import glob
 
+
+wavelenghts = [94,131,171,193,211,304,335,1600,1700]
+
+
+def normalize(args):
+    try:
+        file_name, aia_cutoffs = args
+        fn = os.path.basename(file_name)
+        wavelength = int(fn.split("_")[-1].replace(".npy",""))
+        data = np.load(file_name)
+        data = np.sqrt(data)
+        c = np.sqrt(aia_cutoffs[wavelength])
+        data = np.clip(data, a_min=None, a_max=c)
+        data = data / c
+        np.save(file_name, data)
+        return True
+    except Exception as e:
+        print('Error: {}'.format(e))
+        return False
+
+
 def process(args):
     source_file, target_file, resolution, degradations = args
 
@@ -75,7 +96,8 @@ def process(args):
     np.save(target_file, Xr)
 
     print('Target: {}'.format(target_file))
-    return True
+    return wavelength, Xr.min(), Xr.max()
+
 
 def load_degradations(degradation_dir, wavelengths):
     def getDegrad(fn):
@@ -114,6 +136,10 @@ def main():
     print('Config:')
     pprint.pprint(vars(args), depth=2, width=50)
 
+    print('**************************')
+    print('** Phase 1: Postprocessing')
+    print('**************************')
+
     print('Loading degradations')
     degradations = load_degradations(args.degradation_dir, args.wavelengths)
 
@@ -136,9 +162,47 @@ def main():
     # process the files
     results = process_map(process, file_names, max_workers=args.max_workers, chunksize=args.worker_chunk_size)
 
-    print('Files processed: {}'.format(results.count(True)))
-    print('Files failed   : {}'.format(results.count(False)))
+    files_failed = results.count(False)
+    print('Files processed: {}'.format(len(results) - files_failed))
+    print('Files failed   : {}'.format(files_failed))
     print('Files total    : {}'.format(len(results)))
+
+    print('*************************')
+    print('** Phase 2: Normalization')
+    print('*************************')
+    # construct dictionary of wavelenghts, min values in a numpy array.
+    min_values = {}
+    max_values = {}
+    for result in results:
+        if result == False:
+            continue
+        wavelength, min_value, max_value = result
+        if wavelength not in min_values:
+            min_values[wavelength] = []
+            max_values[wavelength] = []
+        min_values[wavelength].append(min_value)
+        max_values[wavelength].append(max_value)
+
+    for wavelength in wavelenghts:
+        min_values[wavelength] = np.array(min_values[wavelength]).min()
+        max_values[wavelength] = np.array(max_values[wavelength]).max()
+
+    print('Min values:')
+    pprint.pprint(min_values)
+    print('Max values:')
+    pprint.pprint(max_values)
+
+    file_names_normalize = []
+    for source_file, target_file, args.resolution, degradations in file_names:
+        file_names_normalize.append((target_file, max_values))
+   
+    results = process_map(normalize, file_names_normalize, max_workers=args.max_workers, chunksize=args.worker_chunk_size)
+
+    files_failed = results.count(False)
+    print('Files processed: {}'.format(len(results) - files_failed))
+    print('Files failed   : {}'.format(files_failed))
+    print('Files total    : {}'.format(len(results)))
+
     print('End time: {}'.format(datetime.datetime.now()))
     print('Duration: {}'.format(datetime.datetime.now() - start_time))
 
