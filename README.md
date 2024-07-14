@@ -14,11 +14,11 @@ This repository contains:
 The following steps will download AIA and HMI data from the SDO mission, process it, and create a custom SDOML-lite dataset with the default date range. The scripts will download data from the [Joint Science Operations Center (JSOC)](http://jsoc.stanford.edu/).
 
 ```
-python get_aia.py --target_dir ./dataset_raw
-python get_hmi.py --target_dir ./dataset_raw
+python get_aia.py --target_dir ./data_raw
+python get_hmi.py --target_dir ./data_raw
 
-python process_aia.py --source_dir ./dataset_raw --target_dir ./dataset
-python process_hmi.py --source_dir ./dataset_raw --target_dir ./dataset
+python process_aia.py --source_dir ./data_raw --target_dir ./dataset
+python process_hmi.py --source_dir ./data_raw --target_dir ./dataset
 ```
 
 ### Custom date range
