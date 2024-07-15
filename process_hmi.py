@@ -98,12 +98,16 @@ def main():
     target_dir = args.target_dir.rstrip('/')
 
     # get all .fits files in the source directory
-    fits_files = glob(os.path.join(source_dir, '**', '*.jpg'), recursive=True)
+    jpg_files = glob(os.path.join(source_dir, '**', '*.jpg'), recursive=True)
 
+    if len(jpg_files) == 0:
+        print('No files found in source directory: {}'.format(source_dir))
+        return
+    
     # create a list of tuples with the source and target file names
     # be careful to strip or add slashes as needed
     file_names = []
-    for source_file in fits_files:
+    for source_file in jpg_files:
         target_file = source_file.replace(source_dir, target_dir).replace('.jpg', '.npy')
         target_file = target_file.replace('00_M_1k', '_M')
         target_file = target_file.replace(os.path.basename(target_file), 'HMI' + os.path.basename(target_file))
