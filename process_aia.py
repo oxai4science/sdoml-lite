@@ -17,14 +17,20 @@ wavelenghts = [94,131,171,193,211,304,335,1600,1700]
 def normalize(args):
     try:
         file_name, aia_cutoffs = args
+
+        data = np.load(file_name)
+        print('Source: {}'.format(file_name))
+
         fn = os.path.basename(file_name)
         wavelength = int(fn.split("_")[-1].replace(".npy",""))
-        data = np.load(file_name)
+        
         data = np.sqrt(data)
         c = np.sqrt(aia_cutoffs[wavelength])
         data = np.clip(data, a_min=None, a_max=c)
         data = data / c
+
         np.save(file_name, data)
+        print('Target: {}'.format(file_name))
         return True
     except Exception as e:
         print('Error: {}'.format(e))
