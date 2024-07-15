@@ -4,7 +4,7 @@ SDOML-lite is a lightweight version of the SDOML dataset specifically designed f
 
 This repository contains:
 
-- Self-contained code that can be used to create custom SDOML-lite datasets with any given date range, downloading data from original sources and processing into the SDOML-lite format. This is based entirely in Python.
+- Self-contained code that can be used to create custom SDOML-lite datasets with any given date range, downloading data from original sources and processing into the SDOML-lite format. This is implemented entirely in Python.
 - A PyTorch dataset implementation to work with the data.
 
 *IMPORTANT: SDOML and SDOML-lite datasets are different in structure and data distributions. SDOML-lite is inspired by SDOML, but there is no compatibility between the two formats.*
