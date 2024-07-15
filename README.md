@@ -68,6 +68,10 @@ By default the data is provided with an image resolution of 512x512 pixels and a
 
 The HMI data source we use has 15-minute cadence and the AIA data source we use has 2-minute cadence. Given the limiting nature of the 15-minute HMI data that we use, we pair these two datasets using the (HMI, AIA) pairs with times (HH:00, HH:00), (HH:15, HH:14), (HH:30, HH:30), (HH:45, HH:44) for any given hour HH. This is done to ensure that the AIA data is as close as possible to the HMI data in time.
 
+### Size on disk
+
+With the default settings (512x512 resolution, 15-minute cadence), the data size is approximately 928 MiB per day, of which 96 MiB (10%) is HMI data and 832 MiB (90%) is AIA data. The dataset size can be reduced by using a lower resolution (e.g., 256x256) or by using a lower cadence (e.g., 30-minute cadence). Some applications can also work with HMI-only or AIA-only datasets.
+
 ### Data normalization
 
 The data comes normalized within each image channel such that the pixel values are in the range [0, 1], making it ready for machine learning use out of the box. 
