@@ -86,6 +86,8 @@ def process(args):
     Xr = skimage.transform.warp(X,XForm.inverse,preserve_range=True,mode='edge',output_shape=(X.shape[0],X.shape[0]))
     Xm = skimage.transform.warp(validMask,XForm.inverse,preserve_range=True,mode='edge',output_shape=(X.shape[0],X.shape[0]))
 
+    # Note: scaling leaves 10% of image width on each side of the Sun (and likewise for the image height). Measured in 512x512 images but should be the same for 1024x1024 images.
+
     #correct for interpolating over valid pixels
     # Xr = np.divide(Xr,(Xm+1e-8))
     # The mask application above in the original SDOML code might be bad. It ends up multiplying invalid pixels (value zero in mask) by the large factor 1e+8, instead of nullifying them. Simply multiply by the mask instead.
@@ -103,6 +105,8 @@ def process(args):
 
     #cast to fp32
     Xr = Xr.astype('float32')
+
+    Xr = np.flipud(Xr)
 
     os.makedirs(os.path.dirname(target_file), exist_ok=True)    
     np.save(target_file, Xr)

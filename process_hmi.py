@@ -24,6 +24,33 @@ def read_hmi_jpg(file_name):
     x /= 255.
     return x
 
+
+def find_sun_ratio(data):
+    if data.shape[0] != data.shape[1]:
+        raise ValueError('Expecting square image')
+    size = data.shape[0]
+    mid_i = size // 2
+    color = data[mid_i, 0]
+    space_left = 0
+    for i in range(1, mid_i):
+        if data[mid_i, i] == color:
+            color = data[mid_i, i]
+            space_left += 1
+        else:
+            break
+    color = data[0, mid_i]
+    space_top = 0
+    for i in range(1, mid_i):
+        if data[i, mid_i] == color:
+            color = data[i, mid_i]
+            space_top += 1
+        else:
+            break
+    space = (space_left + space_top)/2.
+    ratio = (size - 2*space)/size
+    return ratio
+
+
 # HMI postprocessing based on SDOML code, with some modifications
 # https://github.com/SDOML/SDOML/blob/bea846347b2cd64d81fdcf1baf88a245a1bcb429/hmi_fits_to_np.py
 def process(args):
@@ -41,14 +68,16 @@ def process(args):
     date = datetime.datetime.strptime(fn[:13], '%Y%m%d_%H%M')
 
     # Target angular size
-    trgtAS = 976.0
+    # trgtAS = 976.0
+    target_proportion = 0.8 # From AIA
+    proportion = find_sun_ratio(X)
+    scale_factor = target_proportion / proportion
 
     # Scale factor
     # rad = Xd.meta['RSUN_OBS']
     # Since we don't have the meta data, we'll use the sunpy library to get the angular radius of the sun (based on Earth's position instead of SDO's, but it should be close enough)
-    rad = sun.angular_radius(date).to('arcsec').value
-
-    scale_factor = trgtAS/rad
+    # rad = sun.angular_radius(date).to('arcsec').value
+    # scale_factor = trgtAS/rad
 
     #fix the translation
     t = (X.shape[0]/2.0)-scale_factor*(X.shape[0]/2.0)
