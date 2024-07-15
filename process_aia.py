@@ -154,6 +154,10 @@ def main():
     # get all .fits files in the source directory
     fits_files = glob(os.path.join(source_dir, '**', '*.fits'), recursive=True)
 
+    if len(fits_files) == 0:
+        print('No files found in source directory: {}'.format(source_dir))
+        return
+
     # create a list of tuples with the source and target file names
     # be careful to strip or add slashes as needed
     file_names = []
