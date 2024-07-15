@@ -22,8 +22,8 @@ def normalize(args):
         data = np.load(source_file)
         print('Source: {}'.format(source_file))
 
-        fn = os.path.basename(source_file)
-        wavelength = int(fn.split("_")[-1].replace("_unnormalized.npy",""))
+        fn = os.path.basename(source_file).replace("_unnormalized.npy","")
+        wavelength = int(fn.split("_")[-1])
         
         data = np.sqrt(data)
         c = np.sqrt(aia_cutoffs[wavelength])
