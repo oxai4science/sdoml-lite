@@ -4,14 +4,14 @@ SDOML-lite is a lightweight version of the SDOML dataset specifically designed f
 
 This repository contains:
 
-- Self-contained code that can be used to create custom SDOML-lite datasets with any given date range, downloading data from original sources and processing into the SDOML-lite format. This is based entirely in Python.
+- Self-contained code that can be used to create custom SDOML-lite datasets with any given date range, downloading data from original sources and processing into the SDOML-lite format. This is implemented entirely in Python.
 - A PyTorch dataset implementation to work with the data.
 
 *IMPORTANT: SDOML and SDOML-lite datasets are different in structure and data distributions. SDOML-lite is inspired by SDOML, but there is no compatibility between the two formats.*
 
 ## Creating your own custom SDOML-lite dataset
 
-The following steps will download AIA and HMI data from the SDO mission, process it, and create a custom SDOML-lite dataset with the default date range. The scripts will download data from the [Joint Science Operations Center (JSOC)](http://jsoc.stanford.edu/).
+The following steps will download AIA and HMI data from the SDO mission, process it, and create a custom SDOML-lite dataset with the default date range and other default settings. The scripts will download data from the [Joint Science Operations Center (JSOC)](http://jsoc.stanford.edu/).
 
 ```
 python get_aia.py --target_dir ./dataset_raw
@@ -56,7 +56,7 @@ scp -r user@remote_host_1:/path/to/dataset_raw ./dataset_raw
 scp -r user@remote_host_9:/path/to/dataset_raw ./dataset_raw
 ```
 
-*IMPORTANT: When using chunked data downloads across multiple compute nodes, it is crucial to apply the data processing step with `process_aia.py` only after all the downloaded data is unified into a single directory. This is because the `process_aia.py` script has a data normalization phase that depends on the data distribution the script reads from the files it processes. If `process_aia.py` file is applied to different data chunks separately, the normalization used between different chunks will be different and it will be invalid to combine the processed data chunks into a final dataset*
+*IMPORTANT: When using chunked data downloads across multiple compute nodes, it is crucial to apply the data processing step with `process_aia.py` only after all the downloaded data are unified into a single directory. This is because the `process_aia.py` script has a data normalization phase that depends on the data distribution the script reads from the files it processes. If `process_aia.py` file is applied to different data chunks separately, the normalization used between different chunks will be different and it will be invalid to combine the processed data chunks into a final dataset.*
 
 ## Data
 
@@ -84,7 +84,7 @@ The HMI source we use is already normalized in the range [0, 1]. We normalize th
 
 The main motivation for SDOML-lite is to provide a lightweight dataset to be consumed as an input to machine learning pipelines, e.g., models that can predict Sun-dependent quantities in space weather, thermospheric density, or radiation domains. 
 
-We believe that the data is of sufficient quality as an input for machine learning applications, but note that it is not intended to be used for scientific analysis of the HMI or AIA instruments.
+We believe that the data is of sufficient quality as an input for machine learning applications, but note that it is not intended to conduct scientific analyses of the HMI or AIA instruments.
 
 ## Information about the original SDOML format
 
