@@ -11,7 +11,7 @@ This repository contains:
 
 ## Creating your own custom SDOML-lite dataset
 
-The following steps will download AIA and HMI data from the SDO mission, process it, and create a custom SDOML-lite dataset with the default date range. The scripts will download data from the [Joint Science Operations Center (JSOC)](http://jsoc.stanford.edu/).
+The following steps will download AIA and HMI data from the SDO mission, process it, and create a custom SDOML-lite dataset with the default date range and other default settings. The scripts will download data from the [Joint Science Operations Center (JSOC)](http://jsoc.stanford.edu/).
 
 ```
 python get_aia.py --target_dir ./dataset_raw
