@@ -56,6 +56,8 @@ scp -r user@remote_host_1:/path/to/dataset_raw ./dataset_raw
 scp -r user@remote_host_9:/path/to/dataset_raw ./dataset_raw
 ```
 
+*IMPORTANT: When using chunked data downloads across multiple compute nodes, it is crucial to apply the data processing step with `process_aia.py` only after all the downloaded data is unified into a single directory. This is because the `process_aia.py` script has a data normalization phase that depends on the data distribution the script reads from the files it processes. If `process_aia.py` file is applied to different data chunks separately, the normalization used between different chunks will be different and it will be invalid to combine the processed data chunks into a final dataset*
+
 ## Data
 
 The data is derived from the Helioseismic and Magnetic Imager (HMI) and the Atmospheric Imaging Assembly (AIA) instruments onboard SDO. Our scripts download the data from Stanford [Joint Science Operations Center (JSOC)](http://jsoc.stanford.edu/).
