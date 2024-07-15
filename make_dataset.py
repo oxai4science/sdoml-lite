@@ -81,14 +81,14 @@ def main():
         tar_filename = f"{prefix}-{formatted_index}.tar"
         tar_filepath = os.path.join(target_dir, tar_filename)
 
-        print(f"Generating file: {tar_filename}")
+        print(f"Generating file         : {tar_filename}")
 
         # Create a tar file for this chunk
         with tarfile.open(tar_filepath, "w") as tar:
             for file in files[i:i+files_per_archive]:
                 tar.add(file, arcname=os.path.relpath(file, source_dir))
 
-        print(f"Finished generating file: {tar_filename} ({index}/{num_archives}) (size: {os.path.getsize(tar_filepath):,} bytes")
+        print(f"Finished generating file: {tar_filename} ({index}/{num_archives}) ({os.path.getsize(tar_filepath):,} bytes)")
 
     print("Archives created successfully.")
 
