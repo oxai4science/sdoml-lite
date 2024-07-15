@@ -16,21 +16,25 @@ wavelenghts = [94,131,171,193,211,304,335,1600,1700]
 
 def normalize(args):
     try:
-        file_name, aia_cutoffs = args
+        source_file, aia_cutoffs = args
+        target_file = source_file.replace('.npy.unnormalized', '.npy')
 
-        data = np.load(file_name)
-        print('Source: {}'.format(file_name))
+        data = np.load(source_file)
+        print('Source: {}'.format(source_file))
 
-        fn = os.path.basename(file_name)
-        wavelength = int(fn.split("_")[-1].replace(".npy",""))
+        fn = os.path.basename(source_file)
+        wavelength = int(fn.split("_")[-1].replace(".npy.unnormalized",""))
         
         data = np.sqrt(data)
         c = np.sqrt(aia_cutoffs[wavelength])
         data = np.clip(data, a_min=None, a_max=c)
         data = data / c
 
-        np.save(file_name, data)
-        print('Target: {}'.format(file_name))
+        np.save(target_file, data)
+        print('Target: {}'.format(target_file))
+        # Delete the unnormalized file
+        os.remove(source_file)
+        print('Deleted: {}'.format(source_file))
         return True
     except Exception as e:
         print('Error: {}'.format(e))
@@ -168,7 +172,7 @@ def main():
     # be careful to strip or add slashes as needed
     file_names = []
     for source_file in fits_files:
-        target_file = source_file.replace(source_dir, target_dir).replace('.fits', '.npy')
+        target_file = source_file.replace(source_dir, target_dir).replace('.fits', '.npy.unnormalized')
         file_names.append((source_file, target_file, args.resolution, degradations))
 
     # process the files
