@@ -26,6 +26,7 @@ def read_hmi_jpg(file_name):
 
 
 def find_sun_ratio(data):
+    # Returns the ratio: diameter of the solar disk / length of the image side
     if data.shape[0] != data.shape[1]:
         raise ValueError('Expecting square image')
     size = data.shape[0]
@@ -63,21 +64,19 @@ def process(args):
         print('Error: {}'.format(e))
         return False
     
-    fn = os.path.basename(source_file)
-    # get datetime object from fn. Example fn: 20240101_000000_M_1k.jpg
-    date = datetime.datetime.strptime(fn[:13], '%Y%m%d_%H%M')
-
+    # Scale factor
     # Target angular size
     # trgtAS = 976.0
-    target_proportion = 0.8 # From AIA
-    proportion = find_sun_ratio(X)
-    scale_factor = target_proportion / proportion
-
-    # Scale factor
     # rad = Xd.meta['RSUN_OBS']
     # Since we don't have the meta data, we'll use the sunpy library to get the angular radius of the sun (based on Earth's position instead of SDO's, but it should be close enough)
-    # rad = sun.angular_radius(date).to('arcsec').value
+    # fn = os.path.basename(source_file)
+    # get datetime object from fn. Example fn: 20240101_000000_M_1k.jpg
+    # date = datetime.datetime.strptime(fn[:13], '%Y%m%d_%H%M')    # rad = sun.angular_radius(date).to('arcsec').value
     # scale_factor = trgtAS/rad
+
+    target_sun_ratio = 0.8 # This is the end result of the AIA scaling (AIA images end up having 10% length on each side of the solar disk)
+    ratio = find_sun_ratio(X)
+    scale_factor = target_sun_ratio / ratio
 
     #fix the translation
     t = (X.shape[0]/2.0)-scale_factor*(X.shape[0]/2.0)
