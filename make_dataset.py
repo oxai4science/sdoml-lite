@@ -8,7 +8,7 @@ from glob import glob
 
 
 def main():
-    description = 'WebDataset creation script'
+    description = 'SDOML-lite WebDataset creation script'
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--source_dir', type=str, help='Source directory', required=True)
     parser.add_argument('--target_dir', type=str, help='Destination directory', required=True)

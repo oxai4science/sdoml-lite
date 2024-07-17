@@ -19,6 +19,8 @@ python get_hmi.py --target_dir ./dataset_raw
 
 python process_aia.py --source_dir ./dataset_raw --target_dir ./dataset
 python process_hmi.py --source_dir ./dataset_raw --target_dir ./dataset
+
+python make_dataset.py --source_dir ./dataset --target_dir ./sdoml-lite
 ```
 
 ### Custom date range
