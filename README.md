@@ -76,7 +76,7 @@ The HMI data source we use has 15-minute cadence and the AIA data source we use 
 
 ### Size on disk
 
-With the default settings (512x512 resolution, 15-minute cadence), the data size is approximately 928 MiB per day, of which 96 MiB (10%) is HMI data and 832 MiB (90%) is AIA data. The dataset size can be reduced by using a lower resolution (e.g., 256x256) or by using a lower cadence (e.g., 30-minute cadence). Some applications can also work with HMI-only or AIA-only datasets.
+With the default settings (512x512 resolution, 15-minute cadence), the data size is approximately 738 MiB per day, of which 96 MiB (13%) is HMI data and 642 MiB (87%) is AIA data. The dataset size can be reduced by using a lower resolution (e.g., 256x256) or by using a lower cadence (e.g., 30-minute cadence). Some applications can also work with HMI-only or AIA-only datasets.
 
 ### Data normalization
 
