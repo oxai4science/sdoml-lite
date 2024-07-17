@@ -74,6 +74,31 @@ By default the data is provided with an image resolution of 512x512 pixels and a
 
 The HMI data source we use has 15-minute cadence and the AIA data source we use has 2-minute cadence. Given the limiting nature of the 15-minute HMI data that we use, we pair these two datasets using the (HMI, AIA) pairs with times (HH:00, HH:00), (HH:15, HH:14), (HH:30, HH:30), (HH:45, HH:44) for any given hour HH. This is done to ensure that the AIA data is as close as possible to the HMI data in time.
 
+### Format
+
+SDOML-lite uses the WebDataset convention for storing data. With the default settings, it has one day of data per tar file (representing a shard of the whole dataset), so for a date range of one year, there would be 365 tar files named `sdoml-lite-001.tar` to `sdoml-lite-365.tar`. These tar files can be used shard-based shuffling and distributed training.
+
+Within each tar file, the data is stored using file names `YYYY/MM/DD/HHMM.AIA_WWWW.npy` for AIA and `YYYY/MM/DD/HHMM.HMI_M.npy` for HMI, where `YYYY` is the year, `MM` is the month, `DD` is the day, `HH` is the hour, `MM` is the minute, and `WWWW` is the AIA wavelength string. For example:
+```
+...
+2024/03/08/2345.AIA_0094.npy
+2024/03/08/2345.AIA_0131.npy
+2024/03/08/2345.AIA_0171.npy
+2024/03/08/2345.AIA_0193.npy
+2024/03/08/2345.AIA_0211.npy
+2024/03/08/2345.AIA_1600.npy
+2024/03/08/2345.AIA_1700.npy
+2024/03/08/2345.HMI_M.npy
+...
+```
+
+WebDataset format treats each `YYYY/MM/DD/HHMM` name (until the first period in the file name) as a unit of data sample, and different channels for that data sample will be accessible by names `AIA_0094.npy`, `AIA_0131.npy`, ..., `HMI_M.npy` etc.
+
+Reference material for information on the WebDataset format and its benefits for machine learning applications:
+- https://pytorch.org/blog/efficient-pytorch-io-library-for-large-datasets-many-files-many-gpus/
+- https://huggingface.co/docs/hub/en/datasets-webdataset
+- Aizman, A., Maltby, G. and Breuel, T., 2019, December. High performance I/O for large scale deep learning. In 2019 IEEE International Conference on Big Data (Big Data) (pp. 5965-5967). IEEE. https://arxiv.org/abs/2001.01858
+
 ### Size on disk
 
 With the default settings (512x512 resolution, 15-minute cadence), the data size is approximately 928 MiB per day, of which 96 MiB (10%) is HMI data and 832 MiB (90%) is AIA data. The dataset size can be reduced by using a lower resolution (e.g., 256x256) or by using a lower cadence (e.g., 30-minute cadence). Some applications can also work with HMI-only or AIA-only datasets.
