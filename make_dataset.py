@@ -143,7 +143,7 @@ def main():
 
                     for file, arcname in files_and_arcnames:
                         tar.add(file, arcname=arcname)
-                        print(file, arcname)
+                        # print(file, arcname)
                 current += datetime.timedelta(days=1)
 
         nsamples = len(times_in_tarfile)
