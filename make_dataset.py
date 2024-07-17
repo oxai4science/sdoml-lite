@@ -91,7 +91,7 @@ def main():
             while current <= current_end:
                 print(f"Adding date: {current.strftime('%Y-%m-%d')}")
 
-                files_to_add = [file for file in files if file.startswith(os.path.join(source_dir, current.strftime('%Y/%m/%d')))]
+                files_to_add = sorted([file for file in files if file.startswith(os.path.join(source_dir, current.strftime('%Y/%m/%d')))])
                 if len(files_to_add) == 0:
                     print(f"No files found for {current.strftime('%Y-%m-%d')}")
                 else:
