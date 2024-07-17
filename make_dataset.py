@@ -86,7 +86,32 @@ def main():
         # Create a tar file for this chunk
         with tarfile.open(tar_filepath, "w") as tar:
             for file in files[i:i+files_per_archive]:
-                tar.add(file, arcname=os.path.relpath(file, source_dir))
+                arcname = os.path.relpath(file, source_dir)
+                # print('Source: {}'.format(arcname))
+                arcname_dir = os.path.dirname(arcname)
+                arcname_base = os.path.basename(arcname)
+
+                if arcname_base.startswith('AIA'):
+                    _, time, wavelength = arcname_base.split('_')
+
+                    if time.endswith('14'):
+                        time = time[:2] + '15'
+                    elif time.endswith('44'):
+                        time = time[:2] + '45'
+
+                    wavelength = wavelength.split('.')[0]
+                    arcname_base = f"{time}.AIA_{wavelength}.npy"
+                elif arcname_base.startswith('HMI'):
+                    _, time, _ = arcname_base.split('_')
+                    arcname_base = f"{time}.HMI_M.npy"
+                else:
+                    print(f"Unknown file format: {arcname_base}")
+                    continue
+
+                arcname = os.path.join(arcname_dir, arcname_base)
+                # print('Target: {}'.format(arcname))
+
+                tar.add(file, arcname=arcname)
 
         print(f"Finished generating file: {tar_filename} ({index}/{num_archives}) ({os.path.getsize(tar_filepath):,} bytes)")
 
