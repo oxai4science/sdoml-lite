@@ -5,6 +5,8 @@ import pprint
 import sys
 import tarfile
 from glob import glob
+import hashlib
+import json
 
 
 def main():
@@ -67,8 +69,13 @@ def main():
 
     num_archives = ((date_latest - date_earliest).days + args.days_per_archive)// args.days_per_archive
     print(f"Number of archives to be generated: {num_archives:,}")
-
     padding_length = len(str(num_archives))
+
+    shard_index = {}
+    shard_index["__kind__"] = "wids-shard-index-v1"
+    shard_index["wids_version"] = 1
+    shard_index["name"] = prefix
+    shard_index_shard_list = []
 
     current = date_earliest
     while current <= date_latest:
@@ -87,6 +94,8 @@ def main():
         print(f"Archive               : {tar_filename} ({index}/{num_archives})")
         print(f"Date range (inclusive): {current.strftime('%Y-%m-%d')} - {current_end.strftime('%Y-%m-%d')}")
 
+        times_in_tarfile = set({})
+
         with tarfile.open(tar_filepath, "w") as tar:
             while current <= current_end:
                 print(f"Adding date: {current.strftime('%Y-%m-%d')}")
@@ -95,6 +104,7 @@ def main():
                 if len(files_to_add) == 0:
                     print(f"No files found for {current.strftime('%Y-%m-%d')}")
                 else:
+                    files_and_arcnames = []
                     for file in files_to_add:
                         arcname = os.path.relpath(file, source_dir)
                         # print('Source: {}'.format(arcname))
@@ -111,9 +121,14 @@ def main():
 
                             wavelength = wavelength.split('.')[0]
                             arcname_base = f"{time}.AIA_{wavelength}.npy"
+                            times_in_tarfile.add(time)
+
                         elif arcname_base.startswith('HMI'):
                             _, time, _ = arcname_base.split('_')
+
                             arcname_base = f"{time}.HMI_M.npy"
+                            times_in_tarfile.add(time)
+
                         else:
                             print(f"Unknown file format: {arcname_base}")
                             continue
@@ -121,12 +136,34 @@ def main():
                         arcname = os.path.join(arcname_dir, arcname_base)
                         # print('Target: {}'.format(arcname))
 
+                        files_and_arcnames.append((file, arcname))
+
+                    # sort files_and_arcnames by arcname, so that things are adjacent by arcname in the tar file 
+                    files_and_arcnames = sorted(files_and_arcnames, key=lambda x: x[1])
+
+                    for file, arcname in files_and_arcnames:
                         tar.add(file, arcname=arcname)
+                        print(file, arcname)
                 current += datetime.timedelta(days=1)
 
-            print(f"Archive complete      : {tar_filename} ({os.path.getsize(tar_filepath):,} bytes)")
+        nsamples = len(times_in_tarfile)
+        file_size = os.path.getsize(tar_filepath)
+        print(f"Archive complete      : {tar_filename} ({file_size:,} bytes)")
+
+        shard = {}
+        shard["url"] = tar_filename
+        shard["md5sum"] = hashlib.md5(open(tar_filepath, 'rb').read()).hexdigest()
+        shard["nsamples"] = nsamples
+        shard["filesize"] = file_size
+        shard_index_shard_list.append(shard)
 
     print("Archives created successfully.")
+
+    shard_index["shardlist"] = shard_index_shard_list
+    shard_index_filename = os.path.join(target_dir, f"{prefix}.json")
+    print(f"Writing shard index: {shard_index_filename}")
+    with open(shard_index_filename, 'w') as f:
+        json.dump(shard_index, f, indent=4)
 
     end_time = datetime.datetime.now()
     print('End time: {}'.format(end_time))
