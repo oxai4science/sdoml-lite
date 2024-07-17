@@ -64,7 +64,9 @@ The data is derived from the Helioseismic and Magnetic Imager (HMI) and the Atmo
 
 The dataset contains ten image channels for each date:
 - One channel containing a line-of-sight magnetogram. Based on the HMI "15-Minute Image Catalog" data in JPG format, 1024x1024 resolution, 15-minute cadence, derived from hmi.M_720s data series: http://jsoc.stanford.edu/data/hmi/images/
-- Nine channels containing AIA wavelengths 94, 131, 171, 193, 211, 304, 335, 1600, and 1700 Å. Based on the AIA Synoptic data in FITS format, 1024x1024 resolution, 2-minute cadence: http://jsoc2.stanford.edu/data/aia/synoptic/
+- Seven channels containing AIA wavelengths 94, 131, 171, 193, 211, 1600, and 1700 Å. Based on the AIA Synoptic data in FITS format, 1024x1024 resolution, 2-minute cadence: http://jsoc2.stanford.edu/data/aia/synoptic/
+
+For the AIA channels, we exclude the wavelengths 304, 335 Å from the default configuration, due to degradation-related issues, but these can be added to dataset creation with the argument `--wavelengths` of the `get_aia.py` and `process_aia.py` scripts. We also exclude channel 4500 Å.
 
 By default the data is provided with an image resolution of 512x512 pixels and a time resolution of 15 minutes. The scripts allow generation of SDOML-lite datasets with 1024x1024 resolution if needed.
 
