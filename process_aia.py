@@ -11,6 +11,16 @@ import numpy as np
 from glob import glob
 
 
+def has_nan_or_inf(data):
+    if np.isnan(data).any():
+        return True
+    if np.isinf(data).any():
+        return True
+    if np.isneginf(data).any():
+        return True
+    return False
+
+
 def normalize(args):
     try:
         source_file, aia_cutoffs = args
@@ -19,6 +29,12 @@ def normalize(args):
         data = np.load(source_file)
         print('Source: {}'.format(source_file))
 
+        if has_nan_or_inf(data):
+            print('NaN or Inf found in the unnormalized data')
+            print('Source: {}'.format(source_file))
+            print('Data: {}'.format(data))
+            return
+
         fn = os.path.basename(source_file).replace("_unnormalized.npy","")
         wavelength = int(fn.split("_")[-1])
         
@@ -26,6 +42,14 @@ def normalize(args):
         c = np.sqrt(aia_cutoffs[wavelength])
         data = np.clip(data, a_min=None, a_max=c)
         data = data / c
+
+        if has_nan_or_inf(data):
+            print('NaN or Inf found in the normalized data')
+            print('Source: {}'.format(source_file))
+            print('Data: {}'.format(data))
+            print('Cutoff: {}'.format(c))
+            
+            return
 
         np.save(target_file, data)
         print('Target: {}'.format(target_file))
@@ -104,6 +128,16 @@ def process(args):
     Xr = Xr.astype('float32')
 
     Xr = np.flipud(Xr)
+
+    if has_nan_or_inf(Xr):
+        print('NaN or Inf found in the processed data')
+        print('Source: {}'.format(source_file))
+        print('X: {}'.format(X))
+        print('Xr: {}'.format(Xr))
+        print('expTime: {}'.format(expTime))
+        print('correction: {}'.format(correction))
+
+        sys.exit(1)
 
     os.makedirs(os.path.dirname(target_file), exist_ok=True)    
     np.save(target_file, Xr)
