@@ -78,7 +78,7 @@ The HMI data source we use has 15-minute cadence and the AIA data source we use 
 
 SDOML-lite uses the WebDataset convention for storing data. With the default settings, it has one day of data per tar file (representing a shard of the whole dataset), so for a date range of one year, there would be 365 tar files named `sdoml-lite-001.tar` to `sdoml-lite-365.tar`. These tar files can be used shard-based shuffling and distributed training.
 
-Within each tar file, the data is stored using file names `YYYY/MM/DD/HHMM.AIA_WWWW.npy` for AIA and `YYYY/MM/DD/HHMM.HMI_M.npy` for HMI, where `YYYY` is the year, `MM` is the month, `DD` is the day, `HH` is the hour, `MM` is the minute, and `WWWW` is the AIA wavelength string. For example:
+Within each tar file, the data is stored using file names `YYYY/MM/DD/HHMM.aia_WWWW.npy` for AIA and `YYYY/MM/DD/HHMM.hmi_m.npy` for HMI, where `YYYY` is the year, `MM` is the month, `DD` is the day, `HH` is the hour, `MM` is the minute, and `WWWW` is the AIA wavelength string. For example:
 ```
 ...
 2024/03/08/2345.aia_0094.npy
