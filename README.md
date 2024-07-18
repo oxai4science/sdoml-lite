@@ -78,21 +78,21 @@ The HMI data source we use has 15-minute cadence and the AIA data source we use 
 
 SDOML-lite uses the WebDataset convention for storing data. With the default settings, it has one day of data per tar file (representing a shard of the whole dataset), so for a date range of one year, there would be 365 tar files named `sdoml-lite-001.tar` to `sdoml-lite-365.tar`. These tar files can be used shard-based shuffling and distributed training.
 
-Within each tar file, the data is stored using file names `YYYY/MM/DD/HHMM.AIA_WWWW.npy` for AIA and `YYYY/MM/DD/HHMM.HMI_M.npy` for HMI, where `YYYY` is the year, `MM` is the month, `DD` is the day, `HH` is the hour, `MM` is the minute, and `WWWW` is the AIA wavelength string. For example:
+Within each tar file, the data is stored using file names `YYYY/MM/DD/HHMM.aia_WWWW.npy` for AIA and `YYYY/MM/DD/HHMM.hmi_m.npy` for HMI, where `YYYY` is the year, `MM` is the month, `DD` is the day, `HH` is the hour, `MM` is the minute, and `WWWW` is the AIA wavelength string. For example:
 ```
 ...
-2024/03/08/2345.AIA_0094.npy
-2024/03/08/2345.AIA_0131.npy
-2024/03/08/2345.AIA_0171.npy
-2024/03/08/2345.AIA_0193.npy
-2024/03/08/2345.AIA_0211.npy
-2024/03/08/2345.AIA_1600.npy
-2024/03/08/2345.AIA_1700.npy
-2024/03/08/2345.HMI_M.npy
+2024/03/08/2345.aia_0094.npy
+2024/03/08/2345.aia_0131.npy
+2024/03/08/2345.aia_0171.npy
+2024/03/08/2345.aia_0193.npy
+2024/03/08/2345.aia_0211.npy
+2024/03/08/2345.aia_1600.npy
+2024/03/08/2345.aia_1700.npy
+2024/03/08/2345.hmi_m.npy
 ...
 ```
 
-WebDataset format treats each `YYYY/MM/DD/HHMM` name (until the first period in the file name) as a unit of data sample, and different channels for that data sample will be accessible by names `AIA_0094.npy`, `AIA_0131.npy`, ..., `HMI_M.npy` etc.
+WebDataset format treats each `YYYY/MM/DD/HHMM` name (until the first period in the file name) as a unit of data sample, and different channels for that data sample will be accessible by names `aia_0094.npy`, `aia_0131.npy`, ..., `hmi_m.npy` etc.
 
 Reference material for information on the WebDataset format and its benefits for machine learning applications:
 - https://pytorch.org/blog/efficient-pytorch-io-library-for-large-datasets-many-files-many-gpus/
