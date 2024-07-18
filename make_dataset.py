@@ -120,13 +120,13 @@ def main():
                                 time = time[:2] + '45'
 
                             wavelength = wavelength.split('.')[0]
-                            arcname_base = f"{time}.AIA_{wavelength}.npy"
+                            arcname_base = f"{time}.aia_{wavelength}.npy"
                             times_in_tarfile.add(time)
 
                         elif arcname_base.startswith('HMI'):
                             _, time, _ = arcname_base.split('_')
 
-                            arcname_base = f"{time}.HMI_M.npy"
+                            arcname_base = f"{time}.hmi_m.npy"
                             times_in_tarfile.add(time)
 
                         else:
