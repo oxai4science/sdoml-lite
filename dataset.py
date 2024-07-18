@@ -7,10 +7,11 @@ import numpy as np
 from glob import glob
 import os
 import datetime
+from tqdm import tqdm
 
 
 class SDOMLlite(Dataset):
-    def __init__(self, data_dir, channels=['hmi_m', 'aia_0094', 'aia_0131', 'aia_0171', 'aia_0193', 'aia_0211', 'aia_1600', 'aia_1700']):
+    def __init__(self, data_dir, channels=['hmi_m', 'aia_0094', 'aia_0131', 'aia_0171', 'aia_0193', 'aia_0211', 'aia_1600']):
         self.data_dir = data_dir
         self.channels = channels
         index_file = glob(os.path.join(data_dir, '*.json'))
@@ -27,29 +28,37 @@ class SDOMLlite(Dataset):
         self.date_end = date_end
         print('Start date : {}'.format(self.date_start))
         print('End date   : {}'.format(self.date_end))
-        print('Channels   : {}'.format(self.channels))
+        print('Channels   : {}'.format(', '.join(self.channels)))
         
         self.channels_webdataset_keys = ['.'+c+'.npy' for c in self.channels]
         
         self.date_to_index = {}
         self.dates = []
-        for i in range(len(self.webdataset)):
-            cs = self.webdataset[i].keys()
-            has_all_channels = True
-            for c in self.channels_webdataset_keys:
-                if c not in cs:
-                    has_all_channels = False
-                    break
-            if has_all_channels:
-                date = self.get_date(i)
-                self.date_to_index[date] = i
-                self.dates.append(date)
-                
+        dates_cache = os.path.join(self.data_dir, 'dates_cache_{}'.format('_'.join(self.channels)))
+        if os.path.exists(dates_cache):
+            print('Loading dates from cache: {}'.format(dates_cache))
+            self.dates, self.date_to_index = torch.load(dates_cache)
+        else:
+            for i in tqdm(range(len(self.webdataset)), desc='Checking complete channels'):
+                cs = self.webdataset[i].keys()
+                has_all_channels = True
+                for c in self.channels_webdataset_keys:
+                    if c not in cs:
+                        has_all_channels = False
+                        break
+                if has_all_channels:
+                    date = self.get_date(i)
+                    self.dates.append(date)
+                    self.date_to_index[date] = i
+            print('Saving dates to cache: {}'.format(dates_cache))
+            torch.save((self.dates, self.date_to_index), dates_cache)            
+
         if len(self.dates) == 0:
             raise RuntimeError('No frames found with given list of channels')
                 
-        print('Total frames  : {:,}'.format(len(self.dates)))
-        print('Dropped frames: {:,}'.format(len(self.webdataset) - len(self.dates)))                
+        print('Frames total    : {:,}'.format(len(self.webdataset)))
+        print('Frames available: {:,}'.format(len(self.dates)))
+        print('Frames dropped  : {:,}'.format(len(self.webdataset) - len(self.dates)))                
            
     def get_date(self, index):
         return datetime.datetime.strptime(self.webdataset[index]['__key__'], '%Y/%m/%d/%H%M')
@@ -81,6 +90,7 @@ class SDOMLlite(Dataset):
         for c in self.channels_webdataset_keys:
             channels.append(data[c])
         channels = np.stack(channels)
+        channels = torch.from_numpy(channels)
         return channels
 
 # WORK IN PROGRESS
