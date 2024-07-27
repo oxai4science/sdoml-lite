@@ -5,8 +5,6 @@ import pprint
 import sys
 import tarfile
 from glob import glob
-import hashlib
-import json
 
 
 def main():
@@ -71,12 +69,6 @@ def main():
     print(f"Number of archives to be generated: {num_archives:,}")
     padding_length = len(str(num_archives))
 
-    shard_index = {}
-    shard_index["__kind__"] = "wids-shard-index-v1"
-    shard_index["wids_version"] = 1
-    shard_index["name"] = prefix
-    shard_index_shard_list = []
-
     current = date_earliest
     while current <= date_latest:
         current_end = current + datetime.timedelta(days=args.days_per_archive - 1)
@@ -93,8 +85,6 @@ def main():
         print()
         print(f"Archive               : {tar_filename} ({index}/{num_archives})")
         print(f"Date range (inclusive): {current.strftime('%Y-%m-%d')} - {current_end.strftime('%Y-%m-%d')}")
-
-        times_in_tarfile = set({})
 
         with tarfile.open(tar_filepath, "w") as tar:
             while current <= current_end:
@@ -121,13 +111,11 @@ def main():
 
                             wavelength = wavelength.split('.')[0]
                             arcname_base = f"{time}.aia_{wavelength}.npy"
-                            times_in_tarfile.add(time)
 
                         elif arcname_base.startswith('HMI'):
                             _, time, _ = arcname_base.split('_')
 
                             arcname_base = f"{time}.hmi_m.npy"
-                            times_in_tarfile.add(time)
 
                         else:
                             print(f"Unknown file format: {arcname_base}")
@@ -146,24 +134,11 @@ def main():
                         # print(file, arcname)
                 current += datetime.timedelta(days=1)
 
-        nsamples = len(times_in_tarfile)
         file_size = os.path.getsize(tar_filepath)
         print(f"Archive complete      : {tar_filename} ({file_size:,} bytes)")
 
-        shard = {}
-        shard["url"] = tar_filename
-        shard["md5sum"] = hashlib.md5(open(tar_filepath, 'rb').read()).hexdigest()
-        shard["nsamples"] = nsamples
-        shard["filesize"] = file_size
-        shard_index_shard_list.append(shard)
 
     print("Archives created successfully.")
-
-    shard_index["shardlist"] = shard_index_shard_list
-    shard_index_filename = os.path.join(target_dir, f"{prefix}.json")
-    print(f"Writing shard index: {shard_index_filename}")
-    with open(shard_index_filename, 'w') as f:
-        json.dump(shard_index, f, indent=4)
 
     end_time = datetime.datetime.now()
     print('End time: {}'.format(end_time))
