@@ -94,7 +94,7 @@ def process(args):
     hmi_dir = os.path.dirname(source_file)
     date = datetime.datetime.strptime(hmi_basename[:13], '%Y%m%d_%H%M')
     # Try to find a very close AIA file
-    aia_found = True
+    aia_found = False
     if date.minute == 15:
         date = date.replace(minute=14)
     elif date.minute == 45:
@@ -102,20 +102,19 @@ def process(args):
     aia_files_pattern_prefix = datetime.datetime.strftime(date, 'AIA%Y%m%d_%H%M')
     aia_files_pattern = aia_files_pattern_prefix + '*.fits'
     aia_files_found = glob(os.path.join(hmi_dir, aia_files_pattern))
-    if len(aia_files_found) == 0:
-        aia_found = False
-    aia_file_preferences = [os.path.join(hmi_dir, aia_files_pattern_prefix + '_' + postfix + '.fits') for postfix in ['0131','0171','0193','0211','0094','1600','1700']]
-    aia_files = [file for file in aia_file_preferences if file in aia_files_found]
-    if len(aia_files) == 0:
-        aia_found = False
-    aia_file = aia_files[0]
+    if len(aia_files_found) > 0:
+        aia_file_preferences = [os.path.join(hmi_dir, aia_files_pattern_prefix + '_' + postfix + '.fits') for postfix in ['0131','0171','0193','0211','0094','1600','1700']]
+        aia_files = [file for file in aia_file_preferences if file in aia_files_found]
+        if len(aia_files) > 0:
+            aia_file = aia_files[0]
+            aia_found = True
 
     # If no close AIA file is found, use any AIA file from the same day
     if not aia_found:
         aia_files_found = glob(os.path.join(hmi_dir, 'AIA*.fits'))
         if len(aia_files_found) > 0:
-            aia_found = True
             aia_file = aia_files_found[0]
+            aia_found = True
 
     if aia_found:
         print('Using AIA file metadata for RSUN_OBS: {}'.format(os.path.basename(aia_file)))
