@@ -22,6 +22,7 @@ python process_hmi.py --source_dir ./dataset_raw --target_dir ./dataset
 
 python make_dataset.py --source_dir ./dataset --target_dir ./sdoml-lite
 ```
+_Note: The `process_hmi.py` script needs and uses AIA metadata for calibration purposes, so it should be used after both `get_hmi.py` and `get_aia.py` scripts have finished downloading all the files neeed._
 
 ### Custom date range
 
