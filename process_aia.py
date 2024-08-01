@@ -27,7 +27,7 @@ def normalize(args):
         target_file = source_file.replace('_unnormalized.npy', '.npy')
 
         data = np.load(source_file)
-        print('Source: {}'.format(source_file))
+        print('\nSource: {}'.format(source_file))
 
         fn = os.path.basename(source_file).replace("_unnormalized.npy","")
         wavelength = int(fn.split("_")[-1])
@@ -55,7 +55,7 @@ def process(args):
 
     try:
         Xd = Map(source_file)
-        print('Source: {}'.format(source_file))
+        print('\nSource: {}'.format(source_file))
     except Exception as e:
         print('Error: {}'.format(e))
         return False
@@ -225,16 +225,17 @@ def main():
         min_values[wavelength] = np.array(min_values[wavelength]).min()
         max_values[wavelength] = np.array(max_values[wavelength]).max()
 
-    print('Min values:')
-    pprint.pprint(min_values)
-    print('Max values:')
-    pprint.pprint(max_values)
-
     file_names_normalize = []
     for source_file, target_file, args.resolution, degradations in file_names:
         file_names_normalize.append((target_file, max_values))
    
     results = process_map(normalize, file_names_normalize, max_workers=args.max_workers, chunksize=args.worker_chunk_size)
+
+    print('Normalization factors')
+    print('Min values:')
+    pprint.pprint(min_values)
+    print('Max values:')
+    pprint.pprint(max_values)
 
     files_failed = results.count(False)
     print('Files processed: {}'.format(len(results) - files_failed))
