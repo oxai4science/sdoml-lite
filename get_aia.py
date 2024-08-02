@@ -45,8 +45,8 @@ def process(file_names):
 def main():
     description = 'FDL-X 2024, Radiation Team, SDO AIA data downloader'
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('--date_start', type=str, default='2022-11-01T00:01:00', help='Start date')
-    parser.add_argument('--date_end', type=str, default='2024-05-14T19:44:00', help='End date')
+    parser.add_argument('--date_start', type=str, default='2010-05-13T00:00:00', help='Start date')
+    parser.add_argument('--date_end', type=str, default='2024-07-27T00:00:00', help='End date')
     parser.add_argument('--cadence', type=int, default=15, help='Cadence (minutes)')
     parser.add_argument('--wavelengths', nargs='+', default=[94,131,171,193,211,1600,1700], help='Wavelengths')
     parser.add_argument('--remote_root', type=str, default='http://jsoc.stanford.edu/data/aia/synoptic/', help='Remote root')
