@@ -14,6 +14,8 @@ from functools import lru_cache
 class TarRandomAccess():
     def __init__(self, data_dir):
         tar_files = sorted(glob(os.path.join(data_dir, '*.tar')))
+        if len(tar_files) == 0:
+            raise ValueError('No tar files found in data directory: {}'.format(data_dir))
         self.index = {}
         index_cache = os.path.join(data_dir, 'tar_files_index')
         if os.path.exists(index_cache):
@@ -90,7 +92,7 @@ class WebDataset():
 
 
 class SDOMLlite(Dataset):
-    def __init__(self, data_dir, channels=['hmi_m', 'aia_0131', 'aia_0171', 'aia_0193', 'aia_0211', 'aia_1600'], date_start=None, date_end=None):
+    def __init__(self, data_dir, channels=['hmi_m', 'aia_0131', 'aia_0171', 'aia_0193', 'aia_0211', 'aia_1600'], date_start=None, date_end=None, date_exclusions=None):
         self.data_dir = data_dir
         self.channels = channels
         print('\nSDOML-lite')
@@ -100,13 +102,16 @@ class SDOMLlite(Dataset):
 
         self.date_start, self.date_end = self.find_date_range()
         if date_start is not None:
-            date_start = datetime.datetime.fromisoformat(date_start)
+            if isinstance(date_start, str):
+                date_start = datetime.datetime.fromisoformat(date_start)
+            
             if (date_start >= self.date_start) and (date_start < self.date_end):
                 self.date_start = date_start
             else:
                 print('Start date out of range, using default')
         if date_end is not None:
-            date_end = datetime.datetime.fromisoformat(date_end)
+            if isinstance(date_end, str):
+                date_end = datetime.datetime.fromisoformat(date_end)
             if (date_end > self.date_start) and (date_end <= self.date_end):
                 self.date_end = date_end
             else:
@@ -119,8 +124,19 @@ class SDOMLlite(Dataset):
         print('Delta      : {} minutes'.format(self.delta_minutes))
         print('Channels   : {}'.format(', '.join(self.channels)))
 
+        self.date_exclusions = date_exclusions
+        if self.date_exclusions is not None:
+            print('Date exclusions:')
+            date_exclusions_postfix = '_exclusions'
+            for exclusion_date_start, exclusion_date_end in self.date_exclusions:
+                print('  {} - {}'.format(exclusion_date_start, exclusion_date_end))
+                date_exclusions_postfix += '__{}_{}'.format(exclusion_date_start.isoformat(), exclusion_date_end.isoformat())
+        else:
+            date_exclusions_postfix = ''
+
         self.dates = []
-        dates_cache = os.path.join(self.data_dir, 'dates_index_{}_{}_{}'.format('_'.join(self.channels), self.date_start.isoformat(), self.date_end.isoformat()))
+        dates_cache = 'dates_index_{}_{}_{}{}'.format('_'.join(self.channels), self.date_start.isoformat(), self.date_end.isoformat(), date_exclusions_postfix)
+        dates_cache = os.path.join(self.data_dir, dates_cache)
         if os.path.exists(dates_cache):
             print('Loading dates from cache: {}'.format(dates_cache))
             with open(dates_cache, 'rb') as f:
@@ -137,6 +153,11 @@ class SDOMLlite(Dataset):
                     for channel in self.channels:
                         postfix = channel+'.npy'
                         if postfix not in data:
+                            exists = False
+                            break
+                if self.date_exclusions is not None:
+                    for exclusion_date_start, exclusion_date_end in self.date_exclusions:
+                        if (date >= exclusion_date_start) and (date < exclusion_date_end):
                             exists = False
                             break
                 if exists:
@@ -185,12 +206,17 @@ class SDOMLlite(Dataset):
         return data, date.isoformat()
     
     def get_data(self, date):
-        if date < self.date_start or date > self.date_end:
-            raise ValueError('Date ({}) out of range for SDOML-lite ({} - {})'.format(date, self.date_start, self.date_end))
+        # if date < self.date_start or date > self.date_end:
+        #     raise ValueError('Date ({}) out of range for SDOML-lite ({} - {})'.format(date, self.date_start, self.date_end))
 
         if date not in self.dates_set:
             print('Date not found in SDOML-lite : {}'.format(date))
             return None
+        
+        if self.date_exclusions is not None:
+            for exclusion_date_start, exclusion_date_end in self.date_exclusions:
+                if (date >= exclusion_date_start) and (date < exclusion_date_end):
+                    raise RuntimeError('Should not happen')
 
         prefix = self.date_to_prefix(date)
         data = self.data[prefix]
