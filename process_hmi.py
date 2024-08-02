@@ -161,7 +161,6 @@ def main():
     parser.add_argument('--max_workers', type=int, default=1, help='Max workers')
     parser.add_argument('--worker_chunk_size', type=int, default=1, help='Chunk size per worker')
     parser.add_argument('--resolution', type=int, default=512, help='Pixel resolution of processed images. Should be a divisor of 1024.')
-    parser.add_argument('--wavelengths', nargs='+', default=[94,131,171,193,211,304,335,1600,1700], help='Wavelengths')
     parser.add_argument('--degradation_dir', type=str, default='./degradation/v9', help='Directory with degradation correction files')
 
     args = parser.parse_args()
