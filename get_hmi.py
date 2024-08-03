@@ -37,7 +37,8 @@ def process(file_names):
             return True
         except Exception as e:
             print('Error: {}'.format(e))
-            traceback.print_exception(*sys.exc_info())
+            traceback.print_exception(*sys.exc_info()) 
+            print()
     if os.path.exists(local_file_name):
         os.remove(local_file_name)
     return False
