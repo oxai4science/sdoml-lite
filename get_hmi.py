@@ -19,8 +19,10 @@ def date_to_filename(date):
     return '{:%Y%m%d_%H%M}00_M_1k.jpg'.format(date)
 
 
-def process(file_names):
-    remote_file_name, local_file_name = file_names
+def process(args):
+    remote_file_name, local_file_name, desc = args
+
+    print(desc)
 
     print('Remote: {}'.format(remote_file_name), flush=True)
     os.makedirs(os.path.dirname(local_file_name), exist_ok=True)
@@ -79,6 +81,7 @@ def main():
         print('Adjusted start date: {}'.format(date_start))
 
     current = date_start
+    desc='{} - {} node {}/{}'.format(args.date_start, args.date_end, args.node_index, args.total_nodes)
 
     file_names = []
     while current < date_end:
@@ -90,7 +93,7 @@ def main():
         # print('Remote: {}'.format(remote_file_name))
         local_file_name = os.path.join(args.target_dir, '{:%Y/%m/%d}'.format(current), file_name)
         # print('Local : {}'.format(local_file_name))
-        file_names.append((remote_file_name, local_file_name))
+        file_names.append((remote_file_name, local_file_name, desc))
 
         current += datetime.timedelta(minutes=args.cadence)
 

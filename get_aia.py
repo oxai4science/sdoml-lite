@@ -20,8 +20,10 @@ def date_to_filename(date, wavelength):
     return 'AIA{:%Y%m%d_%H%M}_{:04d}.fits'.format(date, wavelength)
 
 
-def process(file_names):
-    remote_file_name, local_file_name = file_names
+def process(args):
+    remote_file_name, local_file_name, desc = args
+
+    print(desc)
 
     print('Remote: {}'.format(remote_file_name), flush=True)
     os.makedirs(os.path.dirname(local_file_name), exist_ok=True)
@@ -95,6 +97,7 @@ def main():
             print('Adjusted start date: {}'.format(date_start))
 
     current = date_start
+    desc='{} - {} node {}/{}'.format(args.date_start, args.date_end, args.node_index, args.total_nodes)
 
     file_names = []
     while current < date_end:
@@ -107,7 +110,7 @@ def main():
             # print('Remote: {}'.format(remote_file_name))
             local_file_name = os.path.join(args.target_dir, '{:%Y/%m/%d}'.format(current), file_name)
             # print('Local : {}'.format(local_file_name))
-            file_names.append((remote_file_name, local_file_name))
+            file_names.append((remote_file_name, local_file_name, desc))
 
         if args.cadence == 15:
             if current.minute == 0:
@@ -142,8 +145,7 @@ def main():
     if args.max_workers == 1:
         results = list(map(process, file_names_for_this_node))
     else:
-        pbar = tqdm(desc='{} - {} node {}/{}'.format(args.date_start, args.date_end, args.node_index, args.total_nodes), total=len(file_names_for_this_node))
-        results = process_map(process, file_names_for_this_node, max_workers=args.max_workers, chunksize=args.worker_chunk_size, tqdm_class=pbar)
+        results = process_map(process, file_names_for_this_node, max_workers=args.max_workers, chunksize=args.worker_chunk_size)
 
     print('Files downloaded: {}'.format(results.count(True)))
     print('Files skipped   : {}'.format(results.count(False)))
