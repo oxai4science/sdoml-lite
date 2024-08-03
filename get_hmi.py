@@ -8,6 +8,7 @@ import numpy as np
 import urllib.request
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
+import traceback
 
 # BioSentinel dates
 # From: 2022-11-01T00:01:00 
@@ -36,6 +37,7 @@ def process(file_names):
             return True
         except Exception as e:
             print('Error: {}'.format(e))
+            traceback.print_exception(*sys.exc_info())
     if os.path.exists(local_file_name):
         os.remove(local_file_name)
     return False
