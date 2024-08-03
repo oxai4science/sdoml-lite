@@ -143,7 +143,7 @@ def main():
         results = list(map(process, file_names_for_this_node))
     else:
         pbar = tqdm(desc='{} - {} node {}/{}'.format(args.date_start, args.date_end, args.node_index, args.total_nodes), total=len(file_names_for_this_node))
-        results = process_map(process, file_names_for_this_node, max_workers=args.max_workers, chunksize=args.worker_chunk_size, tqdm_class=tqdm)
+        results = process_map(process, file_names_for_this_node, max_workers=args.max_workers, chunksize=args.worker_chunk_size, tqdm_class=pbar)
 
     print('Files downloaded: {}'.format(results.count(True)))
     print('Files skipped   : {}'.format(results.count(False)))
