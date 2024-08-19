@@ -145,7 +145,7 @@ def main():
     if args.max_workers == 1:
         results = list(map(process, file_names_for_this_node))
     else:
-        results = process_map(process, file_names_for_this_node, max_workers=args.max_workers, chunksize=args.worker_chunk_size)
+        results = process_map(process, file_names_for_this_node, max_workers=args.max_workers, chunksize=args.worker_chunk_size, desc='{} - {} node {}/{}'.format(args.date_start, args.date_end, args.node_index, args.total_nodes), total=len(file_names_for_this_node))
 
     print('Files downloaded: {}'.format(results.count(True)))
     print('Files skipped   : {}'.format(results.count(False)))
