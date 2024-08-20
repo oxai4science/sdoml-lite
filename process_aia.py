@@ -74,7 +74,7 @@ def process(args):
     expTime = max(Xd.meta['EXPTIME'],1e-2)
     quality = Xd.meta['QUALITY']
     degrad = degradations[wavelength]
-    if datestring not in degrad:
+    if datestring in degrad:
         correction = degrad[datestring]
     else:
         correction = degrad['last']
