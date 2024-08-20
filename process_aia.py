@@ -73,7 +73,12 @@ def process(args):
 
     expTime = max(Xd.meta['EXPTIME'],1e-2)
     quality = Xd.meta['QUALITY']
-    correction = degradations[wavelength][datestring]
+    degrad = degradations[wavelength]
+    if datestring not in degrad:
+        correction = degrad[datestring]
+    else:
+        correction = degrad['last']
+        print('Degradation correction not found for wavelength {} and date {}, using the last value {}'.format(wavelength, datestring, correction))
 
     if quality != 0:
         print('Quality flag is not zero: {}'.format(quality))
@@ -138,7 +143,9 @@ def load_degradations(degradation_dir, wavelengths):
         degrad = {}
         for l in lines:
             d, f = l.split(",")
-            degrad[d[1:11]] = float(f)
+            f = float(f)
+            degrad[d[1:11]] = f
+            degrad['last'] = f
         return degrad     
     #return wavelength -> (date -> degradation dictionary)
     degrads = {} 
