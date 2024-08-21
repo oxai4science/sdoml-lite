@@ -29,6 +29,8 @@ def main():
     files_reported = 0
 
     for file_path in glob(os.path.join(args.source_dir, '**', args.pattern), recursive=True):
+        if not os.path.isfile(file_path):
+            continue
         files_processed += 1
         size = os.path.getsize(file_path)
         if size < args.min_size:
