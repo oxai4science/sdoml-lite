@@ -21,6 +21,7 @@ def main():
     print('Config:')
     pprint.pprint(vars(args), depth=2, width=50)
 
+    print()
     files = []
     files_processed = 0
     for root, _, filenames in os.walk(args.source_dir):
@@ -29,12 +30,9 @@ def main():
             file_path = os.path.join(root, filename)
             size = os.path.getsize(file_path)
             if size < args.min_size:
-                files.append((file_path, size))
+                print('File: {} Size: {}'.format(file_path, size))
 
-    print('Files smaller than {}:'.format(args.min_size))
-    for file in files:
-        print(file)
-
+    print()
     print('Files processed: {}'.format(files_processed))
     print('Files reported : {}'.format(len(files)))
 
