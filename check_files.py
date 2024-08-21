@@ -32,10 +32,10 @@ def main():
             size = os.path.getsize(file_path)
             if size < args.min_size:
                 files_reported += 1
-                print('File: {} Size: {}'.format(file_path, size))
+                print('File: {} Size: {:,}'.format(file_path, size))
             elif size > args.max_size:
                 files_reported += 1
-                print('File: {} Size: {}'.format(file_path, size))
+                print('File: {} Size: {:,}'.format(file_path, size))
 
     print()
     print('Files processed: {}'.format(files_processed))
