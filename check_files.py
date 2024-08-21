@@ -10,6 +10,7 @@ def main():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--source_dir', type=str, help='Source directory', required=True)
     parser.add_argument('--min_size', type=int, default=400000, help='Threshold for minimum file size (bytes)')
+    parser.add_argument('--max_size', type=int, default=10000000, help='Threshold for maximum file size (bytes)')
 
     args = parser.parse_args()
 
@@ -30,6 +31,9 @@ def main():
             file_path = os.path.join(root, filename)
             size = os.path.getsize(file_path)
             if size < args.min_size:
+                files_reported += 1
+                print('File: {} Size: {}'.format(file_path, size))
+            elif size > args.max_size:
                 files_reported += 1
                 print('File: {} Size: {}'.format(file_path, size))
 
