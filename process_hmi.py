@@ -154,7 +154,7 @@ def process(args):
 
 
 def main():
-    description = 'FDL-X 2024, Radiation team, SDO HMI data processor'
+    description = 'SDOML-lite, SDO HMI data processor'
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--source_dir', type=str, help='Source directory', required=True)
     parser.add_argument('--target_dir', type=str, help='Destination directory', required=True)

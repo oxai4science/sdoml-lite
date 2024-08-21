@@ -155,7 +155,7 @@ def load_degradations(degradation_dir, wavelengths):
 
 
 def main():
-    description = 'FDL-X 2024, Radiation team, SDO AIA data processor'
+    description = 'SDOML-lite, SDO AIA data processor'
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--source_dir', type=str, help='Source directory', required=True)
     parser.add_argument('--target_dir', type=str, help='Destination directory', required=True)

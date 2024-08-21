@@ -48,7 +48,7 @@ def process(args):
 
 
 def main():
-    description = 'FDL-X 2024, Radiation Team, SDO AIA data downloader'
+    description = 'SDOML-lite, SDO AIA data downloader'
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--date_start', type=str, default='2010-05-13T00:00:00', help='Start date')
     parser.add_argument('--date_end', type=str, default='2024-07-27T00:00:00', help='End date')
