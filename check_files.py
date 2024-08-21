@@ -10,7 +10,7 @@ def main():
     description = 'SDOML-lite, file inspector'
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--source_dir', type=str, help='Source directory', required=True)
-    parser.add_argument('--min_size', type=int, default=400000, help='Threshold for minimum file size (bytes)')
+    parser.add_argument('--min_size', type=int, default=20000, help='Threshold for minimum file size (bytes)')
     parser.add_argument('--max_size', type=int, default=10000000, help='Threshold for maximum file size (bytes)')
     parser.add_argument('--pattern', type=str, default='*', help='File pattern to match')
 
