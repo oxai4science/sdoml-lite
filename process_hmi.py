@@ -122,16 +122,16 @@ def process(args):
         trgtAS = 976.0
         aia_scale_factor = trgtAS / aia_rsun_obs
         scale_factor = aia_scale_factor * 0.85 # This is a factor determined empirically by inspecting some images for various dates
+        print('AIA scale factor                    : {}'.format(aia_scale_factor))
+        print('Scale factor (based on AIA)         : {}'.format(scale_factor))
 
-    # If no AIA files are found, fall back to Method 2 (happens almost never)
+    # If no AIA files are found, fall back to Method 2 (should not happen often)
     if not aia_found:
-        print('No AIA files found for HMI file: {}'.format(source_file))
+        print('No AIA files found for HMI file     : {}'.format(source_file))
         target_sun_ratio = 0.8 # This is the end result of the AIA scaling (AIA images end up having 10% length on each side of the solar disk)
         ratio = find_sun_ratio(X)
         scale_factor = target_sun_ratio / ratio
-
-    print('AIA scale factor                     : {}'.format(aia_scale_factor))
-    print('Scale factor                         : {}'.format(scale_factor))
+        print('Scale factor (not based on AIA)     : {}'.format(scale_factor))
 
     #fix the translation
     t = (X.shape[0]/2.0)-scale_factor*(X.shape[0]/2.0)
