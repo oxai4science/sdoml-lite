@@ -3,6 +3,7 @@ import sys
 import argparse
 import datetime
 import pprint
+from glob import glob
 
 
 def main():
@@ -11,6 +12,7 @@ def main():
     parser.add_argument('--source_dir', type=str, help='Source directory', required=True)
     parser.add_argument('--min_size', type=int, default=400000, help='Threshold for minimum file size (bytes)')
     parser.add_argument('--max_size', type=int, default=10000000, help='Threshold for maximum file size (bytes)')
+    parser.add_argument('--pattern', type=str, default='*', help='File pattern to match')
 
     args = parser.parse_args()
 
@@ -25,17 +27,16 @@ def main():
     print()
     files_processed = 0
     files_reported = 0
-    for root, _, filenames in os.walk(args.source_dir):
-        for filename in filenames:
-            files_processed += 1
-            file_path = os.path.join(root, filename)
-            size = os.path.getsize(file_path)
-            if size < args.min_size:
-                files_reported += 1
-                print('File: {} Size: {:,}'.format(file_path, size))
-            elif size > args.max_size:
-                files_reported += 1
-                print('File: {} Size: {:,}'.format(file_path, size))
+
+    for file_path in glob(os.path.join(args.source_dir, '**', args.pattern), recursive=True):
+        files_processed += 1
+        size = os.path.getsize(file_path)
+        if size < args.min_size:
+            files_reported += 1
+            print('File: {} Size: {:,}'.format(file_path, size))
+        elif size > args.max_size:
+            files_reported += 1
+            print('File: {} Size: {:,}'.format(file_path, size))
 
     print()
     print('Files processed: {}'.format(files_processed))
