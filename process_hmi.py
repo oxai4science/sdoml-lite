@@ -65,6 +65,11 @@ def process(args):
         print('Error: {}'.format(e))
         return False
     
+    # Fail if the file is too small, indicates an empty image (all black with just the text label)
+    # There are 91 such files between in 2010 May and July
+    if os.path.getsize(source_file) < 30000:
+        return False
+    
     # The HMI data product we use is not in FITS format and does not provide the metadata RSUN_OBS, so we need to estimate the scale factor
 
     # Original scale factor calculation which we cannot do
@@ -118,12 +123,17 @@ def process(args):
 
     if aia_found:
         print('Using AIA file metadata for RSUN_OBS: {}'.format(os.path.basename(aia_file)))
-        aia_rsun_obs = Map(aia_file).meta['RSUN_OBS']
-        trgtAS = 976.0
-        aia_scale_factor = trgtAS / aia_rsun_obs
-        scale_factor = aia_scale_factor * 0.85 # This is a factor determined empirically by inspecting some images for various dates
-        print('AIA scale factor                    : {}'.format(aia_scale_factor))
-        print('Scale factor (based on AIA)         : {}'.format(scale_factor))
+        try:
+            aia_rsun_obs = Map(aia_file).meta['RSUN_OBS']
+            trgtAS = 976.0
+            aia_scale_factor = trgtAS / aia_rsun_obs
+            scale_factor = aia_scale_factor * 0.85 # This is a factor determined empirically by inspecting some images for various dates
+            print('AIA scale factor                    : {}'.format(aia_scale_factor))
+            print('Scale factor (based on AIA)         : {}'.format(scale_factor))
+        except Exception as e:
+            print('Error: {}'.format(e))
+            print('Failed to read AIA file metadata: {}'.format(aia_file))
+            aia_found = False
 
     # If no AIA files are found, fall back to Method 2 (should not happen often)
     if not aia_found:
