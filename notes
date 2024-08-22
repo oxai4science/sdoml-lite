@@ -5,3 +5,8 @@ Max values: {131: 3118163.8, 171: 762630.6, 193: 4171668.0, 211: 50685.844, 1600
 Files processed: 2399506
 Files failed   : 56585 (2.30%)
 Files total    : 2456091
+
+process_hmi.py for data between 2010-05-13T00:00:00 - 2024-07-31T23:45:00
+Files processed: 488794
+Files failed   : 91
+Files total    : 488885
