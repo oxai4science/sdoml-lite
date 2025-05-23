@@ -1,6 +1,6 @@
 # SDOML-lite
 
-SDOML-lite is a lightweight version of the SDOML dataset specifically designed for machine learning applications in solar physics, providing continuous full-disk images of the Sun with magnetic field and extreme ultraviolet data in several wavelengths. The data source is the [Solar Dynamics Observatory (SDO)](https://sdo.gsfc.nasa.gov/) space telescope, a NASA mission that has been in operation since 2010.
+SDOML-lite is a lightweight alternative to the SDOML dataset specifically designed for machine learning applications in solar physics, providing continuous full-disk images of the Sun with magnetic field and extreme ultraviolet data in several wavelengths. The data source is the [Solar Dynamics Observatory (SDO)](https://sdo.gsfc.nasa.gov/) space telescope, a NASA mission that has been in operation since 2010.
 
 This repository contains:
 
