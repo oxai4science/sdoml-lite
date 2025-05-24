@@ -112,9 +112,9 @@ The HMI source we use is already normalized in the range [0, 1]. We normalize th
 
 ### A note on data quality
 
-The main motivation for SDOML-lite is to provide a lightweight dataset to be consumed as an input to machine learning pipelines, e.g., models that can predict Sun-dependent quantities in space weather, thermospheric density, or radiation domains. 
+The primary motivation for SDOML-lite is to provide a lightweight dataset suitable for use in machine learning pipelines, for example, as input to models that predict Sun-dependent quantities in domains such as space weather, thermospheric density, or radiation exposure.
 
-We believe that the data is of sufficient quality as an input for machine learning applications, but note that it is not intended to conduct scientific analyses of the HMI or AIA instruments.
+We believe the dataset is of sufficient quality to serve as input for a broad range of machine learning applications. However, it is not intended for detailed scientific analysis of the HMI or AIA instruments, for which users should consult the original calibrated data products.
 
 ## Information about the original SDOML format
 
