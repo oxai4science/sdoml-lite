@@ -25,6 +25,10 @@ def process(args):
 
     print(desc)
 
+    if os.path.exists(local_file_name):
+        print('File already exists, skipping: {}'.format(local_file_name))
+        return False
+
     print('Remote: {}'.format(remote_file_name), flush=True)
     os.makedirs(os.path.dirname(local_file_name), exist_ok=True)
     timeout = 5 # seconds
