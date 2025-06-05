@@ -116,7 +116,13 @@ def main():
     print('Total files for this node : {}'.format(len(file_names_for_this_node)))
     
     if args.max_workers == 1:
-        results = list(map(process, file_names_for_this_node))
+        # results = list(map(process, file_names_for_this_node))
+        results = []
+        with tqdm(total=len(file_names_for_this_node), desc="Downloading", unit="file") as pbar:
+            for item in file_names_for_this_node:
+                result = process(item)
+                results.append(result)
+                pbar.update(1)        
     else:
         results = process_map(process, file_names_for_this_node, max_workers=args.max_workers, chunksize=args.worker_chunk_size, desc='{} - {} node {}/{}'.format(args.date_start, args.date_end, args.node_index, args.total_nodes), total=len(file_names_for_this_node))
         
