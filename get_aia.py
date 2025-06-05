@@ -5,6 +5,7 @@ import datetime
 import time
 import os
 import urllib.request
+import urllib.error
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 import traceback
@@ -38,6 +39,14 @@ def process(args):
             open(local_file_name, 'wb').write(r.read())
             print('Local : {}'.format(local_file_name))
             return True
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                print('File not found: {}'.format(remote_file_name))
+                break
+            else:
+                print('HTTP error: {}'.format(e))
+                traceback.print_exception(*sys.exc_info()) 
+                print()
         except Exception as e:
             print('Error: {}'.format(e))
             traceback.print_exception(*sys.exc_info()) 
