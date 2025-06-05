@@ -26,11 +26,11 @@ def process(args):
 
     print(desc)
 
-    time.sleep(0.2)  # Add a short delay to avoid overloading the server
-
     if os.path.exists(local_file_name):
         print('File already exists, skipping: {}'.format(local_file_name))
         return False
+
+    time.sleep(0.2)  # Add a short delay to avoid overloading the server
 
     print('Remote: {}'.format(remote_file_name), flush=True)
     os.makedirs(os.path.dirname(local_file_name), exist_ok=True)
