@@ -112,7 +112,7 @@ def main():
             print('Adjusted start date: {}'.format(date_start))
 
     current = date_start
-    desc='{} - {} node {}/{}'.format(args.date_start, args.date_end, args.node_index, args.total_nodes)
+    desc='{} - {} node {}/{}'.format(args.date_start, args.date_end, args.node_index+1, args.total_nodes)
 
     file_names = []
     while current < date_end:
