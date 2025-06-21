@@ -33,10 +33,6 @@ def main():
     print('Config:')
     pprint.pprint(vars(args), depth=2, width=50)
 
-    print('**************************')
-    print('** Phase 1: Postprocessing')
-    print('**************************')
-
     print('Loading degradations')
     degradations = aia_load_degradations(args.degradation_dir, args.wavelengths)
 
@@ -57,50 +53,11 @@ def main():
     # be careful to strip or add slashes as needed
     file_names = []
     for source_file in fits_files:
-        target_file = source_file.replace(source_dir, target_dir).replace('.fits', '_unnormalized.npy')
-        file_names.append((source_file, target_file, args.resolution, degradations))
+        target_file = source_file.replace(source_dir, target_dir).replace('.fits', '.npy')
+        file_names.append((source_file, target_file, args.resolution, degradations, True))
 
     # process the files
     results = process_map(aia_process, file_names, max_workers=args.max_workers, chunksize=args.worker_chunk_size)
-
-    files_failed = results.count(False)
-    print('Files processed: {}'.format(len(results) - files_failed))
-    print('Files failed   : {}'.format(files_failed))
-    print('Files total    : {}'.format(len(results)))
-
-    print('*************************')
-    print('** Phase 2: Normalization')
-    print('*************************')
-    # construct dictionary of wavelenghts, min values in a numpy array.
-    min_values = {}
-    max_values = {}
-    wavelenghts = []
-    for result in results:
-        if result == False:
-            continue
-        wavelength, min_value, max_value = result
-        wavelenghts.append(wavelength)
-        if wavelength not in min_values:
-            min_values[wavelength] = []
-            max_values[wavelength] = []
-        min_values[wavelength].append(min_value)
-        max_values[wavelength].append(max_value)
-
-    for wavelength in wavelenghts:
-        min_values[wavelength] = np.array(min_values[wavelength]).min()
-        max_values[wavelength] = np.array(max_values[wavelength]).max()
-
-    file_names_normalize = []
-    for source_file, target_file, args.resolution, degradations in file_names:
-        file_names_normalize.append((target_file, max_values))
-   
-    results = process_map(aia_normalize, file_names_normalize, max_workers=args.max_workers, chunksize=args.worker_chunk_size)
-
-    print('Normalization factors')
-    print('Min values:')
-    pprint.pprint(min_values)
-    print('Max values:')
-    pprint.pprint(max_values)
 
     files_failed = results.count(False)
     print('Files processed: {}'.format(len(results) - files_failed))

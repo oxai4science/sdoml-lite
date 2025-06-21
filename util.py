@@ -7,6 +7,18 @@ import skimage.transform
 import matplotlib.pyplot as plt
 
 
+# AIA cutoffs for normalization
+# These values are 99.9 percentiles of pixel values for each channel, 
+# computed from AIA data covering May 2010 - May 2025 after applying the processing code including degradation correction.
+aia_cutoffs = {
+    131: 134.4940966796875,
+    171: 2178.60590625,
+    193: 3953.742609375,
+    211: 1936.5289189453124,
+    1600: 145.166393737793
+}
+
+
 def has_nan_or_inf(data):
     if np.isnan(data).any():
         return True
@@ -154,9 +166,11 @@ def hmi_process(args):
     XForm = skimage.transform.SimilarityTransform(scale=scale_factor,translation=(t,t))
     Xr = skimage.transform.warp(X,XForm.inverse,preserve_range=True,mode='edge',output_shape=(X.shape[0],X.shape[0]))
 
-    #figure out the integer factor to downsample by mean
-    divideFactor = int(X.shape[0] / resolution)
-    Xr = skimage.transform.downscale_local_mean(Xr,(divideFactor,divideFactor))
+    # Resize if needed
+    if resolution != X.shape[0]:
+        #figure out the integer factor to downsample by mean
+        divideFactor = int(X.shape[0] / resolution)
+        Xr = skimage.transform.downscale_local_mean(Xr,(divideFactor,divideFactor))
 
     #cast to fp32
     Xr = Xr.astype('float32')
@@ -187,37 +201,19 @@ def aia_load_degradations(degradation_dir, wavelengths):
     return degrads 
 
 
-def aia_normalize(args):
-    try:
-        source_file, aia_cutoffs = args
-        target_file = source_file.replace('_unnormalized.npy', '.npy')
-
-        data = np.load(source_file)
-        print('\nSource: {}'.format(source_file))
-
-        fn = os.path.basename(source_file).replace("_unnormalized.npy","")
-        wavelength = int(fn.split("_")[-1])
-        
-        data = np.sqrt(data)
-        c = np.sqrt(aia_cutoffs[wavelength])
-        data = np.clip(data, a_min=None, a_max=c)
-        data = data / c
-
-        np.save(target_file, data)
-        print('Target: {}'.format(target_file))
-        # Delete the unnormalized file
-        os.remove(source_file)
-        print('Deleted: {}'.format(source_file))
-        return True
-    except Exception as e:
-        print('Error: {}'.format(e))
-        return False
+def aia_normalize(data, wavelength):
+    data = np.log1p(data)
+    c = np.log1p(aia_cutoffs[wavelength])
+    data = np.clip(data, a_min=None, a_max=c)
+    data = data / c
+    # data = np.clip(data, a_min=0.0, a_max=1.0)
+    return data
     
 
 # AIA postprocessing based on SDOML code, with some modifications
 # https://github.com/SDOML/SDOML/blob/bea846347b2cd64d81fdcf1baf88a245a1bcb429/aia_fits_to_np.py
 def aia_process(args):
-    source_file, target_file, resolution, degradations = args
+    source_file, target_file, resolution, degradations, normalize = args
 
     try:
         Xd = Map(source_file)
@@ -274,17 +270,22 @@ def aia_process(args):
     #correct for exposure time and AIA degradation correction
     Xr = Xr / (expTime*correction)
 
-    #figure out the integer factor to downsample by mean
-    divideFactor = int(X.shape[0] / resolution)
+    # Resize if needed
+    if resolution != X.shape[0]:
+        #figure out the integer factor to downsample by mean
+        divideFactor = int(X.shape[0] / resolution)
 
-    Xr = skimage.transform.downscale_local_mean(Xr,(divideFactor,divideFactor))
-    #make it a sum rather than a mean by multiplying by the number of pixels that were used
-    Xr = Xr*divideFactor*divideFactor
+        Xr = skimage.transform.downscale_local_mean(Xr,(divideFactor,divideFactor))
+        #make it a sum rather than a mean by multiplying by the number of pixels that were used
+        Xr = Xr*divideFactor*divideFactor
 
     #cast to fp32
     Xr = Xr.astype('float32')
 
     Xr = np.flipud(Xr)
+
+    if normalize:
+        Xr = aia_normalize(Xr, wavelength)
 
     if has_nan_or_inf(Xr):
         print('NaN or Inf found in the processed data')
@@ -299,4 +300,4 @@ def aia_process(args):
     np.save(target_file, Xr)
 
     print('Target: {}'.format(target_file))
-    return wavelength, Xr.min(), Xr.max()
+    return True
