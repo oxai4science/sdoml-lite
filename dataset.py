@@ -8,6 +8,7 @@ from tqdm import tqdm
 import tarfile
 import pickle
 from io import BytesIO
+import hashlib
 from functools import lru_cache
 
 
@@ -17,7 +18,10 @@ class TarRandomAccess():
         if len(tar_files) == 0:
             raise ValueError('No tar files found in data directory: {}'.format(data_dir))
         self.index = {}
-        index_cache = os.path.join(data_dir, 'tar_files_index')
+        m = hashlib.md5()
+        m.update(data_dir.encode('utf-8'))
+        data_dir_hash = m.hexdigest()
+        index_cache = os.path.join(data_dir, 'tar_files_index_' + str(data_dir_hash))
         if os.path.exists(index_cache):
             print('Loading tar files index from cache: {}'.format(index_cache))
             with open(index_cache, 'rb') as file:
